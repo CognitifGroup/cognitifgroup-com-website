@@ -1318,6 +1318,11 @@ html.motion-ok .card--dev:hover {
     radial-gradient(85% 110% at 22% 44%, rgba(10, 14, 29, 0.68) 0%, rgba(10, 14, 29, 0.22) 48%, rgba(10, 14, 29, 0) 72%),
     linear-gradient(180deg, rgba(10, 14, 29, 0.3), rgba(10, 14, 29, 0) 30%);
 }
+.ph--about .ph-scrim {
+  background:
+    radial-gradient(70% 100% at 18% 48%, rgba(10, 14, 29, 0.84) 0%, rgba(10, 14, 29, 0.5) 48%, rgba(10, 14, 29, 0) 78%),
+    linear-gradient(180deg, rgba(10, 14, 29, 0.3), rgba(10, 14, 29, 0) 32%);
+}
 .ph-inner { position: relative; z-index: 2; width: 100%; }
 .ph h1 {
   font-size: clamp(2.7rem, 6vw, 4.7rem);
@@ -1351,6 +1356,49 @@ html.motion-ok .ph-cue::after { animation: cue-drop 2.2s var(--ease-soft) infini
   .ph-scrim, .ph--bathy .ph-scrim {
     background:
       linear-gradient(180deg, rgba(10, 14, 29, 0.42) 0%, rgba(10, 14, 29, 0.48) 55%, rgba(10, 14, 29, 0) 96%);
+  }
+  .ph--capture,
+  .ph--minute,
+  .ph--vault,
+  .ph--about {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: clamp(6.6rem, 13vh, 8rem) 0 clamp(4rem, 9vh, 5.5rem);
+  }
+  .ph--capture .ph-canvas,
+  .ph--minute .ph-canvas,
+  .ph--vault .ph-canvas,
+  .ph--about .ph-canvas {
+    position: relative;
+    inset: auto;
+    order: 1;
+    z-index: 1;
+    width: 100%;
+    height: clamp(260px, 46svh, 380px);
+    margin-bottom: clamp(1.1rem, 5vw, 2rem);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .ph--capture .ph-inner,
+  .ph--minute .ph-inner,
+  .ph--vault .ph-inner,
+  .ph--about .ph-inner {
+    order: 2;
+  }
+  .ph--capture .ph-scrim,
+  .ph--minute .ph-scrim,
+  .ph--vault .ph-scrim,
+  .ph--about .ph-scrim {
+    z-index: 0;
+    background:
+      linear-gradient(180deg, rgba(10, 14, 29, 0.16) 0%, rgba(10, 14, 29, 0.08) 42%, rgba(10, 14, 29, 0) 100%);
+  }
+  .ph--about .ph-canvas {
+    height: clamp(310px, 52svh, 430px);
+    margin-bottom: 0.7rem;
   }
   .ph-cue { display: none; }
 }

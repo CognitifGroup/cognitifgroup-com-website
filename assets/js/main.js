@@ -899,12 +899,15 @@
     var dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     var W = 0, H = 0;
     function resize() {
-      W = host.clientWidth; H = host.clientHeight;
+      W = canvas.clientWidth || host.clientWidth;
+      H = canvas.clientHeight || host.clientHeight;
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
     }
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", function () { resize(); kick(); });
+    window.addEventListener("load", function () { resize(); kick(); });
+    requestAnimationFrame(function () { resize(); kick(); });
     var visT = null, visible = false, running = false;
     function loop(now) {
       if (!visible) { running = false; return; }
@@ -1055,6 +1058,97 @@
           }
         });
       }
+    };
+  }
+
+  /* About — a living fingerprint assembled from contour-like ridges.
+     A biometric beam reads the field, then resolves to a privacy verdict. */
+  function makeFingerprint() {
+    return function (ctx, W, H, te) {
+      var mobile = W < 760;
+      var cx = mobile ? W * 0.5 : W * 0.73;
+      var cy = mobile ? H * 0.49 : H * 0.5;
+      var S = Math.min(mobile ? W * 0.82 : W * 0.38, H * (mobile ? 0.78 : 0.68));
+      var intro = smooth(clamp(te / 1.35, 0, 1));
+      var cycle = motionOK ? te % 5.6 : 4.05;
+      var scanT = smooth(clamp((cycle - 0.55) / 2.85, 0, 1));
+      var verdict = smooth(clamp((cycle - 3.35) / 0.28, 0, 1)) * (1 - smooth(clamp((cycle - 4.8) / 0.45, 0, 1)));
+      var top = cy - S * 0.53, bottom = cy + S * 0.53;
+
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      /* Registration frame: precise enough to feel biometric, quiet enough
+         to remain part of the site's cartographic visual language. */
+      var fw = S * 0.88, fh = S * 1.12, corner = S * 0.12;
+      ctx.strokeStyle = "rgba(217,205,175," + (0.18 * intro).toFixed(3) + ")";
+      ctx.lineWidth = 1;
+      [[-1,-1,1,1], [1,-1,-1,1], [-1,1,1,-1], [1,1,-1,-1]].forEach(function (q) {
+        var x = cx + q[0] * fw * 0.5, y = cy + q[1] * fh * 0.5;
+        ctx.beginPath(); ctx.moveTo(x, y + q[3] * corner); ctx.lineTo(x, y); ctx.lineTo(x + q[2] * corner, y); ctx.stroke();
+      });
+
+      /* Nested asymmetric whorls. Each ridge has a small lower opening,
+         avoiding a generic target shape and giving it a true fingerprint flow. */
+      for (var i = 0; i < 24; i++) {
+        var f = (i + 1) / 24;
+        var reveal = smooth(clamp((intro * 1.45 - f * 0.42), 0, 1));
+        if (reveal <= 0) continue;
+        var rx = S * (0.105 + f * 0.36);
+        var ry = S * (0.13 + f * 0.43);
+        var start = Math.PI * (0.49 + f * 0.13);
+        var end = Math.PI * (2.51 - f * 0.1);
+        ctx.beginPath();
+        for (var n = 0; n <= 150; n++) {
+          var a = start + (end - start) * n / 150;
+          var ripple = 1 + 0.018 * Math.sin(a * 5 + i * 0.72) + 0.012 * Math.sin(a * 9 - i * 0.31);
+          var pinch = 1 - 0.12 * Math.exp(-Math.pow((a - Math.PI * 1.48) / 0.42, 2));
+          var x = cx + Math.cos(a) * rx * ripple + Math.sin(a * 2.1) * S * 0.016 * f;
+          var y = cy + Math.sin(a) * ry * ripple * pinch - S * 0.035 * f + Math.cos(a * 1.7) * S * 0.009;
+          n ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        var scanned = scanT > f * 0.92;
+        ctx.strokeStyle = scanned
+          ? "rgba(224,154,108," + (0.28 + 0.42 * reveal).toFixed(3) + ")"
+          : "rgba(217,205,175," + (0.12 + 0.25 * reveal).toFixed(3) + ")";
+        ctx.lineWidth = i % 5 === 0 ? 1.35 : 0.85;
+        ctx.stroke();
+      }
+
+      /* A few ridge endings and islands sell the biometric silhouette. */
+      ctx.strokeStyle = "rgba(224,154,108," + (0.48 * intro).toFixed(3) + ")";
+      ctx.lineWidth = 1.15;
+      [[-.23,.28,-.12,.2], [.18,.33,.27,.23], [-.11,-.13,-.02,-.19], [.13,.02,.23,-.03]].forEach(function (p) {
+        ctx.beginPath(); ctx.moveTo(cx + p[0] * S, cy + p[1] * S); ctx.quadraticCurveTo(cx, cy + (p[1] - 0.06) * S, cx + p[2] * S, cy + p[3] * S); ctx.stroke();
+      });
+
+      /* Scan beam and its soft copper wake. */
+      if (cycle < 3.65 || !motionOK) {
+        var sy = lerp(top, bottom, scanT);
+        var grad = ctx.createLinearGradient(0, sy - S * 0.1, 0, sy + S * 0.1);
+        grad.addColorStop(0, "rgba(198,123,82,0)");
+        grad.addColorStop(0.5, "rgba(224,154,108," + (0.16 * intro).toFixed(3) + ")");
+        grad.addColorStop(1, "rgba(198,123,82,0)");
+        ctx.fillStyle = grad; ctx.fillRect(cx - fw * 0.48, sy - S * 0.1, fw * 0.96, S * 0.2);
+        ctx.strokeStyle = "rgba(240,200,160," + (0.78 * intro).toFixed(3) + ")";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx - fw * 0.48, sy); ctx.lineTo(cx + fw * 0.48, sy); ctx.stroke();
+      }
+
+      var labelY = bottom + S * 0.12;
+      ctx.textAlign = "center";
+      ctx.font = "500 " + Math.max(9, S * 0.026) + "px 'DM Sans', sans-serif";
+      ctx.letterSpacing = Math.max(2, S * 0.008) + "px";
+      ctx.fillStyle = "rgba(217,205,175," + (0.34 * intro * (1 - verdict)).toFixed(3) + ")";
+      ctx.fillText("PRIVACY ARCHITECTURE / SCANNING", cx, labelY);
+      ctx.fillStyle = "rgba(224,154,108," + (0.96 * verdict).toFixed(3) + ")";
+      ctx.fillText("NO PERSONAL DATA HELD", cx, labelY);
+      if (verdict > 0.01) {
+        ctx.strokeStyle = "rgba(224,154,108," + (0.38 * verdict).toFixed(3) + ")";
+        ctx.beginPath(); ctx.arc(cx, cy, S * (0.49 + verdict * 0.018), 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
     };
   }
 
@@ -1591,7 +1685,7 @@
 
   document.querySelectorAll("[data-hero-fx]").forEach(function (cv) {
     var kind = cv.getAttribute("data-hero-fx");
-    var makers = { bathy: makeBathyHero, vault: makeVault, minute: makeMinute, capture: makeCapture, stack: makeStack };
+    var makers = { bathy: makeBathyHero, vault: makeVault, minute: makeMinute, capture: makeCapture, stack: makeStack, fingerprint: makeFingerprint };
     if (makers[kind]) canvasFX(cv, makers[kind]());
   });
 
@@ -1606,10 +1700,18 @@
       phList.forEach(function (sec) {
         var r = sec.getBoundingClientRect();
         if (r.bottom < -80) return;
+        var stackedMobileHero = window.innerWidth <= 760 &&
+          sec.matches(".ph--capture, .ph--minute, .ph--vault");
         var sc = clamp(-r.top / Math.max(r.height * 0.9, 1), 0, 1);
         var cv2 = sec.querySelector(".ph-canvas");
         var inner = sec.querySelector(".ph-inner");
         var cue = sec.querySelector(".ph-cue");
+        if (stackedMobileHero) {
+          if (cv2) { cv2.style.transform = ""; cv2.style.opacity = ""; }
+          if (inner) { inner.style.transform = ""; inner.style.opacity = ""; }
+          if (cue) cue.style.opacity = "";
+          return;
+        }
         if (cv2) {
           cv2.style.transform = "translateY(" + (sc * r.height * 0.3).toFixed(1) + "px)";
           cv2.style.opacity = clamp(1 - sc * 1.35, 0, 1).toFixed(3);
