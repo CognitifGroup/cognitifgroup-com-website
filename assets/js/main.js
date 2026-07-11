@@ -61,15 +61,28 @@
   ---------------------------------------------------------- */
   var revealEls = document.querySelectorAll(".rv");
   if (revealEls.length && "IntersectionObserver" in window && motionOK) {
+    var reveal = function (el) { el.classList.add("in"); ro.unobserve(el); };
     var ro = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          en.target.classList.add("in");
-          ro.unobserve(en.target);
-        }
+        if (en.isIntersecting) reveal(en.target);
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -7% 0px" });
     revealEls.forEach(function (el) { ro.observe(el); });
+
+    /* safety net — the threshold above never fires for a zero-height
+       element (e.g. an image not yet sized), which would leave it
+       stuck invisible. A geometry sweep reveals anything already well
+       inside the viewport regardless of intersection ratio. */
+    var sweep = function () {
+      var vh = window.innerHeight;
+      document.querySelectorAll(".rv:not(.in)").forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.top < vh * 0.92 && r.bottom > 0) reveal(el);
+      });
+    };
+    window.addEventListener("scroll", sweep, { passive: true });
+    window.addEventListener("load", sweep);
+    setTimeout(sweep, 1200);
   } else {
     revealEls.forEach(function (el) { el.classList.add("in"); });
   }
@@ -889,7 +902,7 @@
       if (!visible) { running = false; return; }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
-      render(ctx, W, H, (now - visT) / 1000);
+      render(ctx, W, H, (now - visT) / 1000, canvas);
       requestAnimationFrame(loop);
     }
     function kick() {
@@ -905,8 +918,136 @@
     } else {
       /* reduced motion: render the settled final state once */
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      render(ctx, W, H, 9);
+      render(ctx, W, H, 9, canvas);
     }
+  }
+
+  /* Semantic Bathymetry — the echogram: stacked depth ridgelines
+     drift like a sounding chart being drawn; a survey line drops a
+     ping and reads off the depth where it lands */
+  function makeBathyHero() {
+    var soundings = [], nextSounding = 2.6;
+    var mx = -1e5, my = -1e5, ex = -1e5, ey = -1e5, bound = false;
+    var N = 15;
+    return function (ctx, W, H, te, canvas) {
+      if (!bound) {
+        bound = true;
+        if (finePointer && motionOK) {
+          window.addEventListener("pointermove", function (e) {
+            var r = canvas.getBoundingClientRect();
+            mx = e.clientX - r.left; my = e.clientY - r.top;
+          }, { passive: true });
+        }
+      }
+      ex = ex < -9e4 ? mx : lerp(ex, mx, 0.07);
+      ey = ey < -9e4 ? my : lerp(ey, my, 0.07);
+
+      var narrow = W < 860;
+      var tDrift = motionOK ? te * 0.045 : 0.4;
+      var step = Math.max(6, Math.round(W / 220));
+
+      /* ridgelines, back (top) to front (bottom); each occludes the
+         ones behind it, like strata on an echo sounder */
+      for (var i = 0; i < N; i++) {
+        var fi = i / (N - 1);
+        var rowY = H * (0.32 + 0.62 * fi);
+        var rowF = motionOK ? smooth(clamp((te * 1.3 - i * 0.09) / 0.7, 0, 1)) : 1;
+        if (rowF <= 0) continue;
+        var A = H * 0.15 * (0.4 + 0.6 * Math.pow(Math.sin(Math.PI * fi), 1.1));
+        var xEnd = W * rowF;
+        var copperRow = i % 4 === 2;
+
+        ctx.beginPath();
+        ctx.moveTo(0, rowY);
+        for (var x = 0; x <= xEnd; x += step) {
+          var env = narrow ? 0.85 : (0.3 + 0.7 * smooth((x / W - 0.24) / 0.55));
+          var n = vnNoise(x * 0.004 + i * 13.7, tDrift + i * 0.6);
+          var h = A * env * Math.pow(n, 1.7);
+          if (finePointer && motionOK) {
+            var dx = x - ex, dy = rowY - ey;
+            h += 26 * Math.exp(-(dx * dx) / 16200) * Math.exp(-(dy * dy) / 9800);
+          }
+          ctx.lineTo(x, rowY - h);
+        }
+        /* occlude what's behind, then stroke the profile */
+        ctx.lineTo(xEnd, rowY + 1.5);
+        ctx.lineTo(0, rowY + 1.5);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(10,14,29,0.82)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0, rowY);
+        for (var x2 = 0; x2 <= xEnd; x2 += step) {
+          var env2 = narrow ? 0.85 : (0.3 + 0.7 * smooth((x2 / W - 0.24) / 0.55));
+          var n2 = vnNoise(x2 * 0.004 + i * 13.7, tDrift + i * 0.6);
+          var h2 = A * env2 * Math.pow(n2, 1.7);
+          if (finePointer && motionOK) {
+            var dx2 = x2 - ex, dy2 = rowY - ey;
+            h2 += 26 * Math.exp(-(dx2 * dx2) / 16200) * Math.exp(-(dy2 * dy2) / 9800);
+          }
+          ctx.lineTo(x2, rowY - h2);
+        }
+        ctx.strokeStyle = copperRow
+          ? "rgba(198,123,82," + (0.34 * rowF).toFixed(3) + ")"
+          : "rgba(217,205,175," + (0.22 * rowF).toFixed(3) + ")";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        /* depth scale tick at the left edge of every third stratum */
+        if (i % 3 === 0 && !narrow) {
+          var tickA = 0.3 * rowF;
+          ctx.strokeStyle = "rgba(217,205,175," + tickA.toFixed(3) + ")";
+          ctx.beginPath();
+          ctx.moveTo(W * 0.028, rowY); ctx.lineTo(W * 0.028 + 12, rowY);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(217,205,175," + (tickA * 0.9).toFixed(3) + ")";
+          ctx.font = "500 10px 'DM Sans', sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("−" + (20 + i * 12) + " m", W * 0.028 + 18, rowY + 3);
+        }
+      }
+
+      /* soundings — a dashed survey line drops, pings, reads a depth */
+      if (motionOK) {
+        if (te > nextSounding) {
+          var si = 2 + Math.floor(Math.random() * (N - 4));
+          soundings.push({
+            x: W * (narrow ? 0.15 + 0.7 * Math.random() : 0.34 + 0.58 * Math.random()),
+            row: si, t: te, depth: 20 + si * 12 + Math.floor(Math.random() * 9)
+          });
+          nextSounding = te + 3.4 + Math.random() * 2.2;
+          if (soundings.length > 2) soundings.shift();
+        }
+        soundings.forEach(function (s) {
+          var age = te - s.t;
+          if (age > 2.4) return;
+          var rowY = H * (0.32 + 0.62 * (s.row / (N - 1)));
+          var drop = smooth(clamp(age / 0.55, 0, 1));
+          var fadeS = 1 - smooth(clamp((age - 1.6) / 0.8, 0, 1));
+          var yTop = H * 0.14;
+          ctx.strokeStyle = "rgba(224,154,108," + (0.5 * fadeS).toFixed(3) + ")";
+          ctx.setLineDash([4, 6]);
+          ctx.beginPath();
+          ctx.moveTo(s.x, yTop);
+          ctx.lineTo(s.x, yTop + (rowY - yTop) * drop);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          if (age > 0.55) {
+            var ringAge = clamp((age - 0.55) / 1.2, 0, 1);
+            ctx.strokeStyle = "rgba(224,154,108," + (0.45 * (1 - ringAge) * fadeS).toFixed(3) + ")";
+            ctx.beginPath();
+            ctx.ellipse(s.x, rowY, 8 + ringAge * 60, (8 + ringAge * 60) * 0.32, 0, 0, 6.2832);
+            ctx.stroke();
+            ctx.fillStyle = "rgba(240,200,160," + (0.9 * fadeS).toFixed(3) + ")";
+            ctx.beginPath(); ctx.arc(s.x, rowY, 2.4, 0, 6.2832); ctx.fill();
+            ctx.fillStyle = "rgba(242,233,210," + (0.6 * fadeS).toFixed(3) + ")";
+            ctx.font = "500 11px 'DM Sans', sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText("−" + s.depth + " m", s.x + 12, rowY - 10);
+          }
+        });
+      }
+    };
   }
 
   /* Insightvault — a vault door spins and unseals, dissolving into
@@ -1037,13 +1178,34 @@
           ctx.lineTo(Math.cos(sa) * HR * hf, Math.sin(sa) * HR * hf);
           ctx.stroke();
         }
-        var pf = smooth(clamp((te - 1.35) / 0.9, 0, 1));
-        if (pf > 0) {
-          var vals6 = [0.85, 0.55, 0.72, 0.62, 0.9, 0.48];
+        /* the reading — draws out, holds, folds back to nothing, then
+           re-draws with fresh values, cyclically */
+        var pf;
+        var CYC_START = 3.7, CYC_LEN = 6.4;
+        if (!motionOK) {
+          pf = 1;
+        } else if (te < CYC_START) {
+          pf = smooth(clamp((te - 2.7) / 0.9, 0, 1));
+        } else {
+          var ct = (te - CYC_START) % CYC_LEN;
+          var cyc = Math.floor((te - CYC_START) / CYC_LEN);
+          if (ct < CYC_LEN - 2.2) {
+            pf = 1;                                         /* hold */
+          } else if (ct < CYC_LEN - 1.4) {
+            pf = 1 - smooth((ct - (CYC_LEN - 2.2)) / 0.8);  /* fold away */
+          } else {
+            if (radarRegen !== cyc) {                        /* new sounding */
+              radarRegen = cyc;
+              for (var rv6 = 0; rv6 < 6; rv6++) radarVals[rv6] = 0.38 + Math.random() * 0.57;
+            }
+            pf = smooth((ct - (CYC_LEN - 1.4)) / 0.9);      /* draw back out */
+          }
+        }
+        if (pf > 0.004) {
           ctx.beginPath();
           for (var p6 = 0; p6 <= 6; p6++) {
             var pa = -1.5708 + (p6 % 6) / 6 * 6.2832;
-            var pr = HR * vals6[p6 % 6] * pf * (1 + (motionOK ? 0.02 * Math.sin(te * 1.4 + p6) : 0));
+            var pr = HR * radarVals[p6 % 6] * pf * (1 + (motionOK ? 0.02 * Math.sin(te * 1.4 + p6) : 0));
             p6 ? ctx.lineTo(Math.cos(pa) * pr, Math.sin(pa) * pr) : ctx.moveTo(Math.cos(pa) * pr, Math.sin(pa) * pr);
           }
           ctx.closePath();
@@ -1054,7 +1216,7 @@
           ctx.stroke();
           for (var d6 = 0; d6 < 6; d6++) {
             var da = -1.5708 + d6 / 6 * 6.2832;
-            var dr = HR * vals6[d6] * pf;
+            var dr = HR * radarVals[d6] * pf;
             ctx.fillStyle = "rgba(224,154,108," + (0.85 * pf).toFixed(3) + ")";
             ctx.beginPath();
             ctx.arc(Math.cos(da) * dr, Math.sin(da) * dr, 2.6 + (motionOK ? Math.sin(te * 2 + d6 * 1.3) * 0.7 : 0), 0, 6.2832);
@@ -1066,17 +1228,27 @@
         ctx.restore();
       }
 
-      /* particle intro — scattered data converges into the mechanism */
-      if (te < 1.5 && motionOK) {
-        var pAl = clamp(1 - te / 1.4, 0, 1);
-        ctx.fillStyle = "rgba(224,154,108," + (0.6 * pAl).toFixed(3) + ")";
-        parts.forEach(function (p) {
-          var pe = 1 - Math.pow(1 - clamp((te - p.d) / 1.0, 0, 1), 3);
-          var tr = R * rings[p.ring].r;
-          var xx = lerp(p.sx * W, cx + Math.cos(p.ang) * tr, pe);
-          var yy = lerp(p.sy * H, cy + Math.sin(p.ang) * tr, pe);
-          ctx.beginPath(); ctx.arc(xx, yy, 1.4, 0, 6.2832); ctx.fill();
-        });
+      /* the door dissolves into particles, which drift outward and
+         reassemble as the dial mechanism */
+      if (te > 0.8 && te < 2.7 && motionOK) {
+        var pIn = smooth(clamp((te - 0.8) / 0.3, 0, 1));
+        var pOut = 1 - smooth(clamp((te - 2.1) / 0.55, 0, 1));
+        var pAl = pIn * pOut;
+        if (pAl > 0.004) {
+          ctx.fillStyle = "rgba(224,154,108," + (0.65 * pAl).toFixed(3) + ")";
+          parts.forEach(function (p) {
+            var pe = 1 - Math.pow(1 - clamp((te - 1.0 - p.d) / 1.0, 0, 1), 3);
+            /* start on the door's rim; scatter slightly as it breaks */
+            var burst = smooth(clamp((te - 0.85) / 0.5, 0, 1)) * 0.12;
+            var sr = R * (p.sr + burst);
+            var sxx = cx + Math.cos(p.sa - 2.1) * sr;
+            var syy = cy + Math.sin(p.sa - 2.1) * sr;
+            var tr = R * rings[p.ring].r;
+            var xx = lerp(sxx, cx + Math.cos(p.ang) * tr, pe);
+            var yy = lerp(syy, cy + Math.sin(p.ang) * tr, pe);
+            ctx.beginPath(); ctx.arc(xx, yy, 1.5, 0, 6.2832); ctx.fill();
+          });
+        }
       }
     };
   }
@@ -1212,6 +1384,43 @@
         ctx.beginPath(); ctx.arc(nx, ny, isNota ? 8 : 11, 0, 6.2832); ctx.stroke();
       });
 
+      /* ghost petals — the Petalyx flower flashes into place over the
+         constellation as it forms, then dissolves into pure geometry */
+      if (motionOK && te > 0.5 && te < 2.4) {
+        var gIn = smooth(clamp((te - 0.55) / 0.55, 0, 1));
+        var gOut = 1 - smooth(clamp((te - 1.5) / 0.8, 0, 1));
+        var gA = gIn * gOut;
+        if (gA > 0.004) {
+          var gs = (R * 0.72 / 228) * (0.82 + 0.18 * gIn);
+          nodes.forEach(function (a, i) {
+            var isNota = i === 3;
+            ctx.save();
+            ctx.rotate(a + 1.5708);
+            ctx.scale(gs, gs);
+            ctx.globalAlpha = gA * (isNota ? 0.4 : 1);
+            ctx.strokeStyle = "rgba(242,233,210,0.85)";
+            ctx.lineWidth = 1.4 / gs;
+            ctx.beginPath();
+            ctx.moveTo(0, -60);
+            ctx.bezierCurveTo(36, -96, 42, -166, 0, -228);
+            ctx.bezierCurveTo(-42, -166, -36, -96, 0, -60);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(224,154,108,0.45)";
+            ctx.setLineDash([3 / gs, 6 / gs]);
+            ctx.beginPath();
+            ctx.moveTo(0, -78);
+            ctx.bezierCurveTo(24, -104, 28, -152, 0, -196);
+            ctx.bezierCurveTo(-28, -152, -24, -104, 0, -78);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+          });
+          ctx.globalAlpha = 1;
+        }
+      }
+
       var pulse = motionOK ? 1 + Math.sin(te * 1.8) * 0.06 : 1;
       ctx.strokeStyle = "rgba(224,154,108," + (0.5 * intro).toFixed(3) + ")";
       ctx.lineWidth = 1.2;
@@ -1293,7 +1502,7 @@
         ctx.setLineDash([]);
       }
 
-      pulses = pulses.filter(function (pl) { return (te - pl.t) / 1.3 <= 1; });
+      pulses = pulses.filter(function (pl) { return (te - pl.t) / 1.3 <= 1.3; });
 
       for (var i = 3; i >= 0; i--) {
         var lf = smooth(clamp((te - 0.14 * i) / 0.9, 0, 1));
@@ -1344,32 +1553,35 @@
       }
       pulses.forEach(function (pl) {
         var pp = (te - pl.t) / 1.3;
-        if (pp > 1) return;
+        if (pp > 1.3) return;
+        /* travel finishes at pp = 1; the light then pops — a soft
+           expanding fade at the top instead of an instant vanish */
+        var travel = Math.min(pp, 1);
+        var fade = pp <= 1 ? 1 : clamp(1 - (pp - 1) / 0.3, 0, 1);
+        var pop = pp <= 1 ? 0 : (pp - 1) / 0.3;
         var base = iso(pl.u, pl.v);
-        var yy = base[1] + 1.5 * gap - pp * 3 * gap;
-        var g2 = ctx.createRadialGradient(base[0], yy, 0, base[0], yy, 14);
-        g2.addColorStop(0, "rgba(224,154,108,0.55)");
+        var yy = base[1] + 1.5 * gap - travel * 3 * gap - pop * 10;
+        var gr = 14 * (1 + pop * 1.6);
+        var g2 = ctx.createRadialGradient(base[0], yy, 0, base[0], yy, gr);
+        g2.addColorStop(0, "rgba(224,154,108," + (0.55 * fade).toFixed(3) + ")");
         g2.addColorStop(1, "rgba(224,154,108,0)");
         ctx.fillStyle = g2;
-        ctx.beginPath(); ctx.arc(base[0], yy, 14, 0, 6.2832); ctx.fill();
-        ctx.fillStyle = "rgba(240,200,160,0.9)";
-        ctx.beginPath(); ctx.arc(base[0], yy, 2.2, 0, 6.2832); ctx.fill();
+        ctx.beginPath(); ctx.arc(base[0], yy, gr, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = "rgba(240,200,160," + (0.9 * fade).toFixed(3) + ")";
+        ctx.beginPath(); ctx.arc(base[0], yy, 2.2 + pop * 1.5, 0, 6.2832); ctx.fill();
+        if (pop > 0) {
+          /* tiny spark ring as it pops away */
+          ctx.strokeStyle = "rgba(240,200,160," + (0.5 * fade).toFixed(3) + ")";
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(base[0], yy, 4 + pop * 14, 0, 6.2832); ctx.stroke();
+        }
       });
     };
   }
 
   document.querySelectorAll("[data-hero-fx]").forEach(function (cv) {
     var kind = cv.getAttribute("data-hero-fx");
-    if (kind === "bathy") {
-      isoField(cv, {
-        rgb: "217,205,175", alpha: 0.1, cell: 30, speed: 0.05,
-        cursorPow: 1, pings: true,
-        accent: { index: 2, rgb: "198,123,82" },
-        levels: [0.34, 0.41, 0.47, 0.53, 0.59, 0.66]
-      });
-      return;
-    }
-    var makers = { vault: makeVault, minute: makeMinute, capture: makeCapture, stack: makeStack };
+    var makers = { bathy: makeBathyHero, vault: makeVault, minute: makeMinute, capture: makeCapture, stack: makeStack };
     if (makers[kind]) canvasFX(cv, makers[kind]());
   });
 
@@ -1402,6 +1614,63 @@
     window.addEventListener("scroll", function () {
       if (!phRun) { phRun = true; requestAnimationFrame(phFrame); }
     }, { passive: true });
+  }
+
+  /* ----------------------------------------------------------
+     Timeline (Just a Minute) — a copper sounding-line descends
+     with the scroll, lighting each step as it passes
+  ---------------------------------------------------------- */
+  var tline = document.querySelector(".timeline");
+  if (tline && motionOK) {
+    var tlBar = document.createElement("span");
+    tlBar.className = "tl-progress";
+    tlBar.setAttribute("aria-hidden", "true");
+    tline.appendChild(tlBar);
+    var tlItems = Array.prototype.slice.call(tline.querySelectorAll("li"));
+    var tlRun = false;
+    var tlFrame = function () {
+      tlRun = false;
+      var r = tline.getBoundingClientRect();
+      var vh = window.innerHeight;
+      var p = clamp((vh * 0.64 - r.top) / Math.max(r.height, 1), 0, 1);
+      tlBar.style.transform = "scaleY(" + p.toFixed(4) + ")";
+      var lineY = r.top + 10 + (r.height - 20) * p;
+      tlItems.forEach(function (li) {
+        var num = li.querySelector(".tl-num");
+        if (!num) return;
+        var nr = num.getBoundingClientRect();
+        li.classList.toggle("lit", nr.top + nr.height * 0.5 <= lineY);
+      });
+    };
+    window.addEventListener("scroll", function () {
+      if (!tlRun) { tlRun = true; requestAnimationFrame(tlFrame); }
+    }, { passive: true });
+    window.addEventListener("resize", tlFrame);
+    tlFrame();
+  }
+
+  /* ----------------------------------------------------------
+     Layer rows (Technology) — the phase artwork drifts gently
+     against the scroll while its row slides in
+  ---------------------------------------------------------- */
+  var layerImgs = document.querySelectorAll(".layer-visual img");
+  if (layerImgs.length && motionOK) {
+    var liRun = false;
+    var liFrame = function () {
+      liRun = false;
+      var vh = window.innerHeight;
+      layerImgs.forEach(function (img) {
+        var r = img.getBoundingClientRect();
+        if (r.bottom < -80 || r.top > vh + 80) return;
+        var d = (r.top + r.height / 2 - vh / 2) / vh;
+        img.style.transform =
+          "translateY(" + (d * 24).toFixed(1) + "px) scale(" + (1.06 - Math.min(Math.abs(d), 1) * 0.06).toFixed(3) + ")";
+      });
+    };
+    window.addEventListener("scroll", function () {
+      if (!liRun) { liRun = true; requestAnimationFrame(liFrame); }
+    }, { passive: true });
+    liFrame();
   }
 
   /* ----------------------------------------------------------

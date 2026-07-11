@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&family=DM+Sans:opsz,wght@9..40,300..500&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=3">
+<link rel="stylesheet" href="assets/css/style.css?v=5">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -77,42 +77,42 @@
   <section class="section" aria-label="The four layers" style="padding-top:clamp(2.5rem,6vw,4.5rem)">
     <div class="wrap">
       <div class="layers">
-        <div class="layer rv">
+        <div class="layer rv rv--left">
           <span class="layer-idx" aria-hidden="true">i.</span>
           <h3>Petalyx<small>Capture</small></h3>
           <div>
             <p>The word-association UI users interact with directly.</p>
             <a class="layer-link" href="petalyx.html">Explore Petalyx™</a>
           </div>
-          <figure class="layer-visual layer-visual--bare">
-            <img src="assets/assets/img/architecture/phase-petalyx-v4.png" alt="Abstract phase illustration for Petalyx capture" loading="lazy">
+          <figure class="layer-visual layer-visual--bare rv rv--curtain">
+            <img src="assets/assets/img/architecture/phase-petalyx-v4.png" width="1024" height="1024" alt="Abstract phase illustration for Petalyx capture" loading="lazy">
           </figure>
         </div>
-        <div class="layer rv">
+        <div class="layer rv rv--right">
           <span class="layer-idx" aria-hidden="true">ii.</span>
           <h3>Ontologos<small>Transform</small></h3>
           <p>Orchestration and NLP anchoring to discriminate the underlying sentimental affect signal.</p>
-          <figure class="layer-visual layer-visual--bare">
-            <img src="assets/assets/img/architecture/phase-ontologos-v4.png" alt="Abstract phase illustration for Ontologos transform" loading="lazy">
+          <figure class="layer-visual layer-visual--bare rv rv--curtain">
+            <img src="assets/assets/img/architecture/phase-ontologos-v4.png" width="1024" height="1024" alt="Abstract phase illustration for Ontologos transform" loading="lazy">
           </figure>
         </div>
-        <div class="layer rv">
+        <div class="layer rv rv--left">
           <span class="layer-idx" aria-hidden="true">iii.</span>
           <h3>Semba<small>Protect</small></h3>
           <p>A reticular affective topology held behind a multilayered organisational and infrastructure moat.</p>
-          <figure class="layer-visual layer-visual--bare">
-            <img src="assets/assets/img/architecture/phase-semba-v5.png" alt="Abstract phase illustration for Semba protect" loading="lazy">
+          <figure class="layer-visual layer-visual--bare rv rv--curtain">
+            <img src="assets/assets/img/architecture/phase-semba-v5.png" width="1024" height="1024" alt="Abstract phase illustration for Semba protect" loading="lazy">
           </figure>
         </div>
-        <div class="layer rv">
+        <div class="layer rv rv--right">
           <span class="layer-idx" aria-hidden="true">iv.</span>
           <h3>Insightvault<small>Understand</small></h3>
           <div>
             <p>Analysing population-level sentiment via 3D contour maps and self-optimising drift/anomaly algorithms.</p>
             <a class="layer-link" href="insightvault.html">Explore Insightvault</a>
           </div>
-          <figure class="layer-visual layer-visual--bare">
-            <img src="assets/assets/img/architecture/phase-insightvault-v4.png" alt="Abstract phase illustration for Insightvault understand" loading="lazy">
+          <figure class="layer-visual layer-visual--bare rv rv--curtain">
+            <img src="assets/assets/img/architecture/phase-insightvault-v4.png" width="1024" height="1024" alt="Abstract phase illustration for Insightvault understand" loading="lazy">
           </figure>
         </div>
       </div>
@@ -130,15 +130,23 @@
             <p class="eyebrow" style="margin-bottom:.8rem">Engineering</p>
             <h3>Lead Developer</h3>
             <p class="role">Carter Manahan</p>
-            <p>1st Class BSc Hons in Digital Media. UX and Product Design Guru.</p>
+            <p>First-Class BSc (Hons) in Digital Media. Specialist in UX engineering and product design.</p>
           </div>
         </div>
-        <div class="card card--light rv" style="--d:.1s">
-          <p class="eyebrow">Internship Programme</p>
-          <h3>Join the story.</h3>
-          <p>Part-time internships are occasionally available for exceptional junior and undergraduate candidates with experience or an interest in NLP, Data Science, Linguistics, or Transformer models. If you would like to be part of this ground-breaking story, please get in touch.</p>
-          <a class="link-inline card-mail" href="mailto:devops@cognitifgroup.ai">Email your CV — devops@cognitifgroup.ai</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band-cream section" data-lines="light" aria-labelledby="intern-title">
+    <div class="wrap">
+      <div class="cta-inner">
+        <p class="eyebrow eyebrow--bare rv">Internship programme</p>
+        <h2 id="intern-title" class="display-lg rv" style="--d:.08s">Join the <em>story.</em></h2>
+        <p class="lede rv" style="--d:.15s; margin-inline:auto">Part-time internships are occasionally available for exceptional junior and undergraduate candidates with experience or an interest in NLP, data science, linguistics, or transformer models. If you would like to be part of this ground-breaking story, we would like to hear from you.</p>
+        <div class="cta-actions rv" style="--d:.22s">
+          <a class="btn btn--ink" href="mailto:devops@cognitifgroup.ai"><span>Email your CV</span><span class="arrow" aria-hidden="true">→</span></a>
         </div>
+        <p class="rv" style="--d:.3s; margin-top:1.4rem; font-size:.85rem; letter-spacing:.06em">devops@cognitifgroup.ai</p>
       </div>
     </div>
   </section>
@@ -165,6 +173,6 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=5" defer></script>
+<script src="assets/js/main.js?v=7" defer></script>
 </body>
 </html>

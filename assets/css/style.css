@@ -318,6 +318,52 @@ html.motion-ok .rv.in, html:not(.motion-ok) .rv { opacity: 1; transform: none; }
 .rv--right { transform: translateX(40px); }
 html.motion-ok .rv--left.in, html.motion-ok .rv--right.in { transform: none; }
 
+/* hero-intro copy should not depend on scroll observers to appear */
+@keyframes hero-load-up {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes hero-cue-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes hero-cue-rise {
+  from { transform: translateY(22px); }
+  to { transform: none; }
+}
+html.motion-ok .hx-scene--intro .hx-kicker,
+html.motion-ok .hx-scene--intro .hx-sub,
+html.motion-ok .ph .eyebrow.rv,
+html.motion-ok .ph .lede.rv,
+html.motion-ok .ph .ph-meta.rv,
+html.motion-ok .page-hero .eyebrow.rv,
+html.motion-ok .page-hero .lede.rv,
+html.motion-ok .page-hero .meta-line.rv {
+  opacity: 0;
+  transform: translateY(26px);
+  animation: hero-load-up 1s var(--ease-out) both;
+  animation-delay: var(--d, 0s);
+  transition: none;
+}
+html.motion-ok .hx-scene--intro .hx-kicker,
+html.motion-ok .ph .eyebrow.rv,
+html.motion-ok .page-hero .eyebrow.rv {
+  --d: 0.04s;
+}
+html.motion-ok .hx-scene--intro .hx-sub {
+  --d: 0.56s;
+}
+html.motion-ok .ph-cue {
+  opacity: 0;
+  transform: translateY(22px);
+  animation: hero-cue-up 1s var(--ease-out) both;
+  animation-delay: 0.62s;
+}
+html.motion-ok .hx.is-pinned .hx-cue {
+  animation: hero-cue-rise 0.95s var(--ease-out) both;
+  animation-delay: 0.74s;
+}
+
 /* ============================================================
    HOME — cinematic scroll hero
    ============================================================ */
@@ -763,6 +809,22 @@ html.motion-ok .timeline li:not(.lit) .tl-num { color: var(--cream-faint); }
   border-radius: 0;
   box-shadow: none;
 }
+/* the illustration "develops" as its row arrives — the curtain wipes
+   down (on the figure) while the art itself eases up from a soft blur */
+.layer-visual.rv--curtain img {
+  transition: transform 1.1s var(--ease-out), filter 1.1s var(--ease-soft), opacity 1.1s var(--ease-soft);
+  transition-delay: calc(var(--d, 0s) + 0.12s);
+}
+html.motion-ok .layer-visual.rv--curtain:not(.in) img {
+  transform: scale(1.08);
+  filter: blur(6px);
+  opacity: 0.5;
+}
+html.motion-ok .layer-visual.rv--curtain.in img {
+  transform: scale(1);
+  filter: blur(0);
+  opacity: 1;
+}
 @media (max-width: 860px) {
   .layer {
     grid-template-columns: 30px minmax(0, 1fr) clamp(104px, 27vw, 136px);
@@ -877,6 +939,7 @@ html.motion-ok .card:hover { border-color: rgba(198, 123, 82, 0.35); transform: 
   pointer-events: none;
   z-index: 1;
 }
+.card--dev::after { z-index: 0; }
 html.motion-ok .card--light:hover,
 html.motion-ok .card--dev:hover {
   border-color: rgba(160, 95, 60, 0.38);
@@ -1170,6 +1233,7 @@ html.motion-ok .card--dev:hover {
 }
 .ph .lede { max-width: 46ch; }
 .ph-meta {
+  display: flex; flex-wrap: wrap; align-items: center; row-gap: 0.5em;
   margin-top: 1.7rem;
   font-size: 0.7rem; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase;
   color: var(--cream-faint);
