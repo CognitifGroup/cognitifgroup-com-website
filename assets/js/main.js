@@ -451,7 +451,9 @@
       ]
     },
     terrainbox: {
-      nx: 26, nz: 26, rx: -0.38, ry0: 0.75, zoom: 0.62, lift: 0.8,
+      nx: 26, nz: 26, rx: 0.76, ry0: 0.62, zoom: 0.62, lift: 0.8,
+      rxMin: 0.54, rxMax: 0.94,
+      userRxMin: -0.12, userRxMax: 0.16,
       hmax: 1.0, box: true, plumb: { u: 0.42, v: 0.42 },
       height: function (u, v) {
         var h = 0.95 * gauss(u, v, -0.18, -0.1, 0.42)
@@ -526,7 +528,10 @@
       var ry = conf.ry0 + userRy + drift + swing;
       /* tilt is clamped to bird's-eye territory — you can spin the chart
          and peer further down onto it, but never up from underneath */
-      var rx = clamp(conf.rx + userRx, -0.9, -0.3);
+      var rx = clamp(conf.rx + userRx,
+        conf.rxMin !== undefined ? conf.rxMin : -0.9,
+        conf.rxMax !== undefined ? conf.rxMax : -0.3
+      );
       var m = {
         cy: Math.cos(ry), sy: Math.sin(ry),
         cx: Math.cos(rx), sx: Math.sin(rx),
@@ -653,7 +658,10 @@
       if (!dragging) return;
       userRy += (e.clientX - lx) * 0.006;
       userRx += (e.clientY - ly2) * 0.0028;
-      userRx = clamp(userRx, -0.6, 0.6);
+      userRx = clamp(userRx,
+        conf.userRxMin !== undefined ? conf.userRxMin : -0.6,
+        conf.userRxMax !== undefined ? conf.userRxMax : 0.6
+      );
       lx = e.clientX; ly2 = e.clientY;
       kick();
     });
@@ -1296,21 +1304,22 @@
       }
       ctx.restore();
 
-      if (te > 1.1) {
+      var sweepFade = smooth(clamp((te - 1.05) / 0.55, 0, 1));
+      if (sweepFade > 0.001) {
         var SEG = 40;
         for (var s = 0; s < SEG; s++) {
           var a1 = sweepA - (s + 1) * 0.05, a2 = sweepA - s * 0.05;
-          ctx.strokeStyle = "rgba(224,154,108," + (0.45 * (1 - s / SEG)).toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(224,154,108," + (0.45 * (1 - s / SEG) * sweepFade).toFixed(3) + ")";
           ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(0, 0, R - 26, a1, a2 + 0.006); ctx.stroke();
         }
         var hx = Math.cos(sweepA) * (R - 26), hy = Math.sin(sweepA) * (R - 26);
         var g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 26);
-        g.addColorStop(0, "rgba(224,154,108,0.5)");
+        g.addColorStop(0, "rgba(224,154,108," + (0.5 * sweepFade).toFixed(3) + ")");
         g.addColorStop(1, "rgba(224,154,108,0)");
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(hx, hy, 26, 0, 6.2832); ctx.fill();
-        ctx.fillStyle = "rgba(240,200,160,0.95)";
+        ctx.fillStyle = "rgba(240,200,160," + (0.95 * sweepFade).toFixed(3) + ")";
         ctx.beginPath(); ctx.arc(hx, hy, 3, 0, 6.2832); ctx.fill();
       }
 
@@ -1421,11 +1430,12 @@
         }
       }
 
+      var coreFade = smooth(clamp((te - 0.55) / 0.7, 0, 1));
       var pulse = motionOK ? 1 + Math.sin(te * 1.8) * 0.06 : 1;
-      ctx.strokeStyle = "rgba(224,154,108," + (0.5 * intro).toFixed(3) + ")";
+      ctx.strokeStyle = "rgba(224,154,108," + (0.5 * intro * coreFade).toFixed(3) + ")";
       ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.arc(0, 0, 22 * pulse, 0, 6.2832); ctx.stroke();
-      ctx.fillStyle = "rgba(224,154,108," + (0.85 * intro).toFixed(3) + ")";
+      ctx.fillStyle = "rgba(224,154,108," + (0.85 * intro * coreFade).toFixed(3) + ")";
       ctx.beginPath(); ctx.arc(0, 0, 3.4, 0, 6.2832); ctx.fill();
 
       if (motionOK && te > 1.6 && te - lastPulse > 2.1) {
@@ -1633,8 +1643,10 @@
       var r = tline.getBoundingClientRect();
       var vh = window.innerHeight;
       var p = clamp((vh * 0.64 - r.top) / Math.max(r.height, 1), 0, 1);
-      tlBar.style.transform = "scaleY(" + p.toFixed(4) + ")";
-      var lineY = r.top + 10 + (r.height - 20) * p;
+      tlBar.style.transform =
+        (window.innerWidth > 760 ? "translateX(-50%) " : "") +
+        "scaleY(" + p.toFixed(4) + ")";
+      var lineY = r.top + 14 + (r.height - 28) * p;
       tlItems.forEach(function (li) {
         var num = li.querySelector(".tl-num");
         if (!num) return;
