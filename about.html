@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&family=DM+Sans:opsz,wght@9..40,300..500&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=2">
+<link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -59,11 +59,13 @@
 
 <main id="main">
 
-  <section class="page-hero">
+  <section class="page-hero" data-lines="deep">
     <div class="wrap">
       <p class="eyebrow rv">The company</p>
-      <h1 class="rv" style="--d:.08s">About&nbsp;<em>Us.</em></h1>
-      <p class="lede rv" style="--d:.16s">Privacy by architecture. Governance by design.</p>
+      <h1>
+        <span class="mask-line" style="--d:.1s"><span>About&nbsp;<em>Us.</em></span></span>
+      </h1>
+      <p class="lede rv" style="--d:.24s">Privacy by architecture. Governance by design.</p>
     </div>
   </section>
 
@@ -101,12 +103,10 @@
     </div>
   </section>
 
-  <div class="wrap"><hr class="divider rv"></div>
-
-  <section class="section" aria-labelledby="detail-title">
-    <div class="wrap wrap--narrow">
-      <p class="eyebrow rv">Company details</p>
-      <h2 id="detail-title" class="display-md rv" style="--d:.06s; margin-top:0.9rem; margin-bottom:2.4rem">On the&nbsp;<em>record.</em></h2>
+  <section class="band-cream section" data-lines="light" aria-labelledby="detail-title">
+    <div class="wrap wrap--narrow" style="text-align:center">
+      <p class="eyebrow eyebrow--bare rv">Company details</p>
+      <h2 id="detail-title" class="display-lg rv" style="--d:.06s; margin-top:0.9rem; margin-bottom:2.6rem">On the&nbsp;<em>record.</em></h2>
       <dl class="detail-list rv" style="--d:.1s">
         <div class="row">
           <dt>Company</dt>
@@ -150,6 +150,6 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=4" defer></script>
+<script src="assets/js/main.js?v=5" defer></script>
 </body>
 </html>

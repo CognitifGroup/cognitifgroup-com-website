@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&family=DM+Sans:opsz,wght@9..40,300..500&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=2">
+<link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -59,24 +59,28 @@
 
 <main id="main">
 
-  <section class="page-hero">
-    <div class="wrap">
+  <section class="ph ph--vault" aria-label="Insightvault — introduction">
+    <canvas class="ph-canvas" data-hero-fx="vault" aria-hidden="true"></canvas>
+    <div class="ph-scrim" aria-hidden="true"></div>
+    <div class="wrap ph-inner">
       <p class="eyebrow rv">The analysis layer</p>
-      <h1 class="rv" style="--d:.08s">Insight<em>vault.</em></h1>
-      <p class="lede rv" style="--d:.16s">AI-driven analysis and optimisation.</p>
+      <h1>
+        <span class="mask-line" style="--d:.12s"><span>Insight<em>vault.</em></span></span>
+      </h1>
+      <p class="lede rv" style="--d:.28s">AI-driven analysis and optimisation — where population sentiment is unlocked, examined, and watched for drift.</p>
+      <p class="ph-meta rv" style="--d:.4s">Energy surfaces<span class="sep" aria-hidden="true">·</span>Peduncular Quotient<span class="sep" aria-hidden="true">·</span>Periscope</p>
     </div>
+    <div class="ph-cue" aria-hidden="true">Scroll</div>
   </section>
 
-  <div class="wrap"><hr class="divider rv"></div>
-
-  <section class="section" aria-labelledby="vis-title">
+  <section class="section" aria-labelledby="vis-title" style="padding-top:clamp(2.5rem,6vw,4.5rem)">
     <div class="wrap wrap--narrow prose">
       <p class="eyebrow rv">01 — Visualisation</p>
       <h2 id="vis-title" class="display-md rv" style="--d:.06s; margin-top:0.9rem">An energy surface of&nbsp;<em>meaning.</em></h2>
       <p class="rv" style="--d:.1s">Results are rendered as a Boltzmann-style energy surface: stable, frequently co-activated regions of meaning appear as low-energy attractor peaks, and systematically avoided regions appear as high-energy repulsive basins, giving equal visual weight to what a population approaches and what it avoids.</p>
       <p class="rv">Each of the six affective axes adopts 10 pole-aligned anchors calibrated against the specific semantic vocabulary of the Dimension under consideration, projecting the anonymised Semba data onto a 60&nbsp;×&nbsp;50 reticular topography. In this way a single word such as ‘Heart’ can be seen to have varying affective weight when viewed in different semantic contexts — e.g. Romance, Health and Poker.</p>
       <figure class="figure rv">
-        <div class="viz-panel" data-viz="surface" aria-label="Interactive three-dimensional wireframe of an affective energy surface: copper attractor peaks rise where meaning settles, slate repulsive basins sink where it is avoided">
+        <div class="viz-panel" data-viz="surface" data-form="scroll" aria-label="Interactive three-dimensional wireframe of an affective energy surface: copper attractor peaks rise where meaning settles, slate repulsive basins sink where it is avoided. The surface forms as the page scrolls.">
           <canvas></canvas>
           <span class="viz-hint" aria-hidden="true">Drag to rotate</span>
         </div>
@@ -105,13 +109,23 @@
       <p class="rv" style="--d:.1s">Periscope is the platform's recursive AI calibration layer. Rather than treating demographic and circadian correction factors as fixed assumptions, it models them as parameters to be learned from empirical evidence, updating them from the accumulated dataset on a regular batch cadence.</p>
       <p class="rv">The use of Bayesian and Monte Carlo techniques allows calibration to be continuously optimised, ensuring that noise filters, semantic correlations and input vocabulary are fine-tuned to reflect poly-dimensional real-world relationships. Together, these are what make the platform adaptive rather than static — quarter-on-quarter drift in the affective landscape is a critically important signal, not noise to be overlooked or filtered out.</p>
 
-      <blockquote class="callout rv">
+      <blockquote class="callout rv rv--curtain">
         <p>If you wish to resonate ‘Trust’ with a Young Woman at Night, the most effective prompt might be ‘Loyalty’; however, for a Middle-Aged Man during the Day, to evoke the concept of ‘Trust’ it might be preferable to refer to ‘Integrity’. This is generally a stable pattern, but over the last 3 quarters Old Women appear to have been migrating their opinion in favour of ‘Integrity’ and away from ‘Romance’.</p>
         <p>To bridge the concepts of ‘Trust’ and ‘Quality’, the most effective prompts would be ‘Reliable’ and ‘Consistent’ — but not ‘Compromise’ or ‘Negotiate’.</p>
         <cite>Charting the depths of human sentiment</cite>
       </blockquote>
-      <div class="cta-actions rv" style="justify-content:flex-start">
-        <a class="btn btn--copper" href="architecture.html"><span>Next — Technology</span><span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section class="band-cream section" data-lines="light" aria-labelledby="iv-next-title">
+    <div class="wrap">
+      <div class="cta-inner">
+        <p class="eyebrow eyebrow--bare rv">Where to next</p>
+        <h2 id="iv-next-title" class="display-lg rv" style="--d:.08s">See how it's <em>built.</em></h2>
+        <p class="lede rv" style="--d:.15s; margin-inline:auto">Four progressive layers carry every association from a split-second choice on a user's device to the analysis you've just read about.</p>
+        <div class="cta-actions rv" style="--d:.22s">
+          <a class="btn btn--ink" href="architecture.html"><span>Next — Technology</span><span class="arrow" aria-hidden="true">→</span></a>
+        </div>
       </div>
     </div>
   </section>
@@ -138,6 +152,6 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=4" defer></script>
+<script src="assets/js/main.js?v=5" defer></script>
 </body>
 </html>

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&family=DM+Sans:opsz,wght@9..40,300..500&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=2">
+<link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -59,17 +59,21 @@
 
 <main id="main">
 
-  <section class="page-hero">
-    <div class="wrap">
+  <section class="ph ph--minute" aria-label="Just a Minute — introduction">
+    <canvas class="ph-canvas" data-hero-fx="minute" aria-hidden="true"></canvas>
+    <div class="ph-scrim" aria-hidden="true"></div>
+    <div class="wrap ph-inner">
       <p class="eyebrow rv">A plain-English introduction</p>
-      <h1 class="rv" style="--d:.08s">Just a <em>Minute.</em></h1>
-      <p class="lede rv" style="--d:.16s">Six steps from a split-second choice to a living map of what a population feels — no jargon, no laboratory.</p>
+      <h1>
+        <span class="mask-line" style="--d:.12s"><span>Just a <em>Minute.</em></span></span>
+      </h1>
+      <p class="lede rv" style="--d:.28s">Six steps from a split-second choice to a living map of what a population feels — no jargon, no laboratory.</p>
+      <p class="ph-meta rv" style="--d:.4s">Sixty seconds<span class="sep" aria-hidden="true">·</span>Six steps<span class="sep" aria-hidden="true">·</span>Plain English</p>
     </div>
+    <div class="ph-cue" aria-hidden="true">Scroll</div>
   </section>
 
-  <div class="wrap"><hr class="divider rv"></div>
-
-  <section class="section" aria-label="The six steps">
+  <section class="section" aria-label="The six steps" style="padding-top:clamp(2.5rem,6vw,4.5rem)">
     <div class="wrap">
       <ol class="timeline">
         <li class="rv">
@@ -118,7 +122,7 @@
           <figcaption>The sounding: a single split-second choice, plumbed against the deep terrain of association.</figcaption>
         </figure>
 
-        <blockquote class="callout rv" style="--d:.12s; margin:0">
+        <blockquote class="callout rv rv--curtain" style="--d:.12s; margin:0">
           <div class="co-block">
             <p class="co-label">The behavioural shift</p>
             <p>Rather than eliciting conscious ratings, a forced-choice word association task is presented within a carefully constructed semantic pool.</p>
@@ -134,8 +138,18 @@
         </blockquote>
       </div>
 
-      <div class="cta-actions rv" style="justify-content:flex-start; margin-top:3rem">
-        <a class="btn btn--copper" href="petalyx.html"><span>Next — Petalyx™</span><span class="arrow" aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <section class="band-cream section" data-lines="light" aria-labelledby="jm-next-title">
+    <div class="wrap">
+      <div class="cta-inner">
+        <p class="eyebrow eyebrow--bare rv">Where to next</p>
+        <h2 id="jm-next-title" class="display-lg rv" style="--d:.08s">Sixty seconds down. Meet the <em>instrument.</em></h2>
+        <p class="lede rv" style="--d:.15s; margin-inline:auto">Petalyx™ is the flower that does the asking — five petals, one instinct, and nothing personal ever leaves the device.</p>
+        <div class="cta-actions rv" style="--d:.22s">
+          <a class="btn btn--ink" href="petalyx.html"><span>Next — Petalyx™</span><span class="arrow" aria-hidden="true">→</span></a>
+        </div>
       </div>
     </div>
   </section>
@@ -162,6 +176,6 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=4" defer></script>
+<script src="assets/js/main.js?v=5" defer></script>
 </body>
 </html>

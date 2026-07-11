@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&family=DM+Sans:opsz,wght@9..40,300..500&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=2">
+<link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -59,70 +59,70 @@
 
 <main id="main">
 
-  <section class="page-hero">
-    <div class="wrap">
+  <section class="ph ph--bathy" aria-label="Semantic Bathymetry — introduction">
+    <canvas class="ph-canvas" data-hero-fx="bathy" aria-hidden="true"></canvas>
+    <div class="ph-scrim" aria-hidden="true"></div>
+    <div class="wrap ph-inner">
       <p class="eyebrow rv">The discipline</p>
-      <h1 class="rv" style="--d:.08s">Semantic <em>Bathymetry</em><span class="tm">™</span></h1>
-      <p class="lede rv" style="--d:.16s">An AI system for capturing the structure of a population's implicit mood and feelings — where it is settled, and where it is shifting.</p>
+      <h1>
+        <span class="mask-line" style="--d:.12s"><span>Semantic</span></span>
+        <span class="mask-line" style="--d:.25s"><span><em>Bathymetry</em><span class="tm">™</span></span></span>
+      </h1>
+      <p class="lede rv" style="--d:.34s">An AI system for capturing the structure of a population's implicit mood and feelings — where it is settled, and where it is shifting.</p>
+      <p class="ph-meta rv" style="--d:.46s">Depth-charted<span class="sep" aria-hidden="true">·</span>Six affective axes<span class="sep" aria-hidden="true">·</span>Population scale</p>
+    </div>
+    <div class="ph-cue" aria-hidden="true">Scroll</div>
+  </section>
+
+  <section class="section" aria-labelledby="topo-title" style="padding-top:clamp(2.5rem,6vw,4.5rem)">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow rv">The surface</p>
+        <h2 id="topo-title" class="display-lg rv" style="--d:.08s">A topographical map of human&nbsp;<em>sentiment.</em></h2>
+        <p class="lede rv" style="--d:.16s">Every response is mapped across six axes, capturing a population's emotional stance as a continuous 3D surface. Sharp, low-temperature attractors rise where associations pile up and agree; smooth, high-temperature basins spread where meaning remains unsettled.</p>
+      </div>
+
+      <figure class="figure rv">
+        <div class="viz-panel viz-panel--wide" data-viz="bathy" data-form="scroll" aria-label="Interactive three-dimensional wireframe of a semantic landscape: sharp attractor peaks of low temperature rise on the left while smooth diffuse spaces of high temperature spread to the right. The terrain forms as the page scrolls.">
+          <canvas></canvas>
+          <span class="viz-hint" aria-hidden="true">Drag to rotate</span>
+        </div>
+        <figcaption>The sounding chart, taking shape as you descend: attractors are regions of high consensus; diffuse spaces are regions of high variance.</figcaption>
+      </figure>
     </div>
   </section>
 
   <div class="wrap"><hr class="divider rv"></div>
 
-  <section class="section" aria-labelledby="topo-title">
+  <section class="section" aria-labelledby="axes-title">
     <div class="wrap">
       <div class="section-head">
-        <p class="eyebrow rv">The surface</p>
-        <h2 id="topo-title" class="display-lg rv" style="--d:.08s">A topographical map of human&nbsp;<em>sentiment.</em></h2>
-        <p class="lede rv" style="--d:.16s">Every response is mapped across six axes, capturing a population's emotional stance as a continuous 3D surface.</p>
+        <p class="eyebrow rv">The six coordinates</p>
+        <h2 id="axes-title" class="display-lg rv" style="--d:.08s">Six axes. One&nbsp;<em>fingerprint.</em></h2>
+        <p class="lede rv" style="--d:.16s">Every association a population makes resolves onto six affective axes. Plotted together they form a single continuous shape — as distinctive as a coastline, and read the same way.</p>
       </div>
 
-      <figure class="figure rv">
-        <img src="assets/img/bathymetry-diagram.jpg" alt="A semantic landscape rendered as wireframe terrain: sharp dark attractor peaks labelled low temperature rise on the left, while smooth diffuse spaces labelled high temperature spread to the right" width="1384" height="463" loading="lazy">
-        <figcaption>Attractors are regions of high consensus; diffuse spaces are regions of high variance.</figcaption>
-      </figure>
+      <div class="sbc" data-compass></div>
+      <ul class="sr-only">
+        <li>Approach vs Avoidance — orientation vector</li>
+        <li>Safety vs Threat — security baseline</li>
+        <li>Power vs Powerlessness — agency capacity</li>
+        <li>Trust vs Suspicion — reliability index</li>
+        <li>Moral Sanction vs Transgression — integrity boundary</li>
+        <li>Vitality vs Depletion — momentum energy</li>
+      </ul>
+      <p class="fig-note rv">The six-coordinate model — a population's sentimental fingerprint, plotted as one continuous form.</p>
+    </div>
+  </section>
 
-      <div class="axes" aria-label="The six affective axes">
-        <div class="axis-row rv">
-          <span class="axis-pole">Approach</span>
-          <span class="axis-mid" aria-hidden="true"><span>vs</span></span>
-          <span class="axis-pole axis-pole--neg">Avoidance</span>
-        </div>
-        <div class="axis-row rv" style="--d:.05s">
-          <span class="axis-pole">Safety</span>
-          <span class="axis-mid" aria-hidden="true"><span>vs</span></span>
-          <span class="axis-pole axis-pole--neg">Threat</span>
-        </div>
-        <div class="axis-row rv" style="--d:.1s">
-          <span class="axis-pole">Power</span>
-          <span class="axis-mid" aria-hidden="true"><span>vs</span></span>
-          <span class="axis-pole axis-pole--neg">Powerlessness</span>
-        </div>
-        <div class="axis-row rv" style="--d:.15s">
-          <span class="axis-pole">Trust</span>
-          <span class="axis-mid" aria-hidden="true"><span>vs</span></span>
-          <span class="axis-pole axis-pole--neg">Suspicion</span>
-        </div>
-        <div class="axis-row rv" style="--d:.2s">
-          <span class="axis-pole">Moral Sanction</span>
-          <span class="axis-mid" aria-hidden="true"><span>vs</span></span>
-          <span class="axis-pole axis-pole--neg">Transgression</span>
-        </div>
-        <div class="axis-row rv" style="--d:.25s">
-          <span class="axis-pole">Vitality</span>
-          <span class="axis-mid" aria-hidden="true"><span>vs</span></span>
-          <span class="axis-pole axis-pole--neg">Depletion</span>
-        </div>
-      </div>
-
-      <figure class="figure rv">
-        <img src="assets/img/six-coordinates.jpg" alt="Star-shaped compass diagram showing the six structural coordinates: Approach vs Avoidance, Safety vs Threat, Power vs Powerlessness, Trust vs Suspicion, Moral Sanction vs Transgression, and Vitality vs Depletion" width="1321" height="630" loading="lazy">
-        <figcaption>The six-coordinate model — a population's sentimental fingerprint, plotted as one continuous form.</figcaption>
-      </figure>
-
-      <div class="wrap--narrow" style="margin-top:clamp(2rem,5vw,3rem)">
-        <div class="cta-actions rv" style="justify-content:flex-start">
-          <a class="btn btn--copper" href="insightvault.html"><span>Next — Insightvault</span><span class="arrow" aria-hidden="true">→</span></a>
+  <section class="band-cream section" data-lines="light" aria-labelledby="sb-next-title">
+    <div class="wrap">
+      <div class="cta-inner">
+        <p class="eyebrow eyebrow--bare rv">Where to next</p>
+        <h2 id="sb-next-title" class="display-lg rv" style="--d:.08s">From the chart to the <em>vault.</em></h2>
+        <p class="lede rv" style="--d:.15s; margin-inline:auto">The map is only the beginning. Insightvault is where the terrain is analysed, interrogated, and watched for drift.</p>
+        <div class="cta-actions rv" style="--d:.22s">
+          <a class="btn btn--ink" href="insightvault.html"><span>Next — Insightvault</span><span class="arrow" aria-hidden="true">→</span></a>
         </div>
       </div>
     </div>
@@ -150,6 +150,6 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=4" defer></script>
+<script src="assets/js/main.js?v=5" defer></script>
 </body>
 </html>
