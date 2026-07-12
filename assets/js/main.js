@@ -1727,41 +1727,6 @@
   }
 
   /* ----------------------------------------------------------
-     Timeline (Just a Minute) — a copper sounding-line descends
-     with the scroll, lighting each step as it passes
-  ---------------------------------------------------------- */
-  var tline = document.querySelector(".timeline");
-  if (tline && motionOK) {
-    var tlBar = document.createElement("span");
-    tlBar.className = "tl-progress";
-    tlBar.setAttribute("aria-hidden", "true");
-    tline.appendChild(tlBar);
-    var tlItems = Array.prototype.slice.call(tline.querySelectorAll("li"));
-    var tlRun = false;
-    var tlFrame = function () {
-      tlRun = false;
-      var r = tline.getBoundingClientRect();
-      var vh = window.innerHeight;
-      var p = clamp((vh * 0.64 - r.top) / Math.max(r.height, 1), 0, 1);
-      tlBar.style.transform =
-        (window.innerWidth > 760 ? "translateX(-50%) " : "") +
-        "scaleY(" + p.toFixed(4) + ")";
-      var lineY = r.top + 14 + (r.height - 28) * p;
-      tlItems.forEach(function (li) {
-        var num = li.querySelector(".tl-num");
-        if (!num) return;
-        var nr = num.getBoundingClientRect();
-        li.classList.toggle("lit", nr.top + nr.height * 0.5 <= lineY);
-      });
-    };
-    window.addEventListener("scroll", function () {
-      if (!tlRun) { tlRun = true; requestAnimationFrame(tlFrame); }
-    }, { passive: true });
-    window.addEventListener("resize", tlFrame);
-    tlFrame();
-  }
-
-  /* ----------------------------------------------------------
      Layer rows (Technology) — the phase artwork drifts gently
      against the scroll while its row slides in
   ---------------------------------------------------------- */
