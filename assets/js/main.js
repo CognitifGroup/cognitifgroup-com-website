@@ -1406,11 +1406,6 @@
           ctx.beginPath(); ctx.arc(0, 0, R - 26, a1, a2 + 0.006); ctx.stroke();
         }
         var hx = Math.cos(sweepA) * (R - 26), hy = Math.sin(sweepA) * (R - 26);
-        var g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 26);
-        g.addColorStop(0, "rgba(166,98,62," + (0.5 * sweepFade).toFixed(3) + ")");
-        g.addColorStop(1, "rgba(166,98,62,0)");
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(hx, hy, 26, 0, 6.2832); ctx.fill();
         ctx.fillStyle = "rgba(140,78,46," + (0.95 * sweepFade).toFixed(3) + ")";
         ctx.beginPath(); ctx.arc(hx, hy, 3, 0, 6.2832); ctx.fill();
       }
@@ -1431,15 +1426,6 @@
         }
       }
 
-      var secs = Math.floor(prog * 60);
-      ctx.fillStyle = "rgba(24,32,64," + (0.82 * intro).toFixed(3) + ")";
-      ctx.font = "340 " + Math.round(R * 0.34) + "px Fraunces, Georgia, serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(("0" + secs).slice(-2), 0, -R * 0.02);
-      ctx.fillStyle = "rgba(160,95,60," + (0.85 * intro).toFixed(3) + ")";
-      ctx.font = "500 " + Math.max(10, Math.round(R * 0.055)) + "px 'DM Sans', sans-serif";
-      ctx.fillText("S E C O N D S", 0, R * 0.18);
       ctx.restore();
     };
   }
@@ -1878,4 +1864,5 @@
     if (motionOK) onScroll(); else { f = 1; apply(); }
   }
   document.querySelectorAll("[data-compass]").forEach(buildCompass);
+
 })();

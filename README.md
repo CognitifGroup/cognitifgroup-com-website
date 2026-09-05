@@ -21,8 +21,7 @@ assets/img/                 Brand + content imagery
 
 ## Notable behaviour
 
-- **Homepage hero** — pinned, scroll-driven: five scenes choreograph the Petalyx flower (bloom → rotate → alternate left/right → solution statement). Falls back to a plain stacked layout when JavaScript is off or `prefers-reduced-motion` is set.
-- **Petalyx graphic** — built at runtime as inline SVG (`buildPetalyx` in main.js); six petals, counter-rotated labels, NOTA at 6 o'clock, hover lift, idle sway.
+- **Homepage hero** — a prominent animated Cognitif mark, adapted to the website's motion language and isolated in a lightweight embedded document.
 - **Ember cursor trail** — inner pages only, fine pointers only, disabled under reduced motion.
 - **Film grain** — fixed overlay, animated only when motion is allowed.
 

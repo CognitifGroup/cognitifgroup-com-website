@@ -8,12 +8,20 @@
 <meta property="og:title" content="Technology — How the Platform is Built">
 <meta property="og:description" content="Four progressive layers: Petalyx, Ontologos, Semba, Insightvault.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Cognitif Group">
+<meta property="og:url" content="https://www.cognitifgroup.com/architecture.html">
+<meta property="og:image" content="https://www.cognitifgroup.com/assets/assets/img/architecture/insightvault-analytics-light.png">
+<meta property="og:image:alt" content="The Cognitif technology stack, from capture through analysis">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#f7f2e5">
-<link rel="icon" href="assets/img/logo-mark.png">
+<link rel="canonical" href="https://www.cognitifgroup.com/architecture.html">
+<link rel="icon" type="image/png" href="assets/img/logo-mark.png">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="assets/img/logo-mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&family=DM+Sans:opsz,wght@9..40,300..500&display=swap">
-<link rel="stylesheet" href="assets/css/style.css?v=20">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,340..600&amp;family=DM+Sans:opsz,wght@9..40,300..500&amp;display=swap">
+<link rel="stylesheet" href="assets/css/style.css?v=25">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -64,67 +72,96 @@
     <div class="ph-scrim" aria-hidden="true"></div>
     <div class="wrap ph-inner">
       <h1>
-        <span class="mask-line" style="--d:.12s"><span>How the platform</span></span>
-        <span class="mask-line" style="--d:.25s"><span>is&nbsp;<em>built.</em></span></span>
+        <span class="mask-line d-12"><span>How the platform</span></span>
+        <span class="mask-line d-25"><span>is&nbsp;<em>built.</em></span></span>
       </h1>
-      <p class="lede rv" style="--d:.34s">Four progressive layers — Petalyx, Ontologos, Semba and Insightvault — from capture on the user's device through to AI-driven visualisation.</p>
+      <p class="lede rv d-34">Four progressive layers — Petalyx, Ontologos, Semba and Insightvault — from capture on the user's device through to AI-driven visualisation.</p>
     </div>
   </section>
 
-  <section class="section" aria-label="The four layers" style="padding-top:clamp(2.5rem,6vw,4.5rem)">
+  <section class="section section-intro-pad" aria-label="The four layers">
     <div class="wrap">
-      <div class="layers">
-        <div class="layer rv rv--left">
-          <span class="layer-idx" aria-hidden="true">i.</span>
-          <h3>Petalyx<small>Capture</small></h3>
-          <div>
+      <div class="layer-intro rv">
+        <p class="eyebrow">Platform sequence</p>
+        <h2 class="display-md">From human signal to <em>decision-grade insight.</em></h2>
+        <p>Each layer adds a distinct capability while preserving a clear chain from collection to analysis.</p>
+      </div>
+      <ol class="layers" aria-label="Petalyx to Insightvault platform sequence">
+        <li class="layer rv rv--left">
+          <span class="layer-idx" aria-hidden="true">01</span>
+          <figure class="layer-visual layer-visual--bare">
+            <picture>
+              <source type="image/avif" srcset="assets/assets/img/architecture/petalyx-capture-light-320.avif 320w, assets/assets/img/architecture/petalyx-capture-light-640.avif 640w" sizes="(max-width: 860px) 104px, 220px">
+              <source type="image/webp" srcset="assets/assets/img/architecture/petalyx-capture-light-320.webp 320w, assets/assets/img/architecture/petalyx-capture-light-640.webp 640w" sizes="(max-width: 860px) 104px, 220px">
+              <img src="assets/assets/img/architecture/petalyx-capture-light.png" width="1254" height="1254" alt="User input and signal funnel illustration for Petalyx capture" loading="lazy" decoding="async">
+            </picture>
+          </figure>
+          <div class="layer-copy">
+            <h3>Petalyx<small>Capture</small></h3>
             <p>The word-association UI users interact with directly.</p>
             <a class="layer-link" href="petalyx.html">Explore Petalyx™</a>
           </div>
-          <figure class="layer-visual layer-visual--bare rv rv--curtain">
-            <img src="assets/assets/img/architecture/phase-petalyx-v4.png" width="1024" height="1024" alt="Abstract phase illustration for Petalyx capture" loading="lazy">
+        </li>
+        <li class="layer rv rv--right">
+          <span class="layer-idx" aria-hidden="true">02</span>
+          <figure class="layer-visual layer-visual--bare">
+            <picture>
+              <source type="image/avif" srcset="assets/assets/img/architecture/ontologos-transform-light-320.avif 320w, assets/assets/img/architecture/ontologos-transform-light-640.avif 640w" sizes="(max-width: 860px) 104px, 220px">
+              <source type="image/webp" srcset="assets/assets/img/architecture/ontologos-transform-light-320.webp 320w, assets/assets/img/architecture/ontologos-transform-light-640.webp 640w" sizes="(max-width: 860px) 104px, 220px">
+              <img src="assets/assets/img/architecture/ontologos-transform-light.png" width="1254" height="1254" alt="Neural processing chip illustration for Ontologos transform" loading="lazy" decoding="async">
+            </picture>
           </figure>
-        </div>
-        <div class="layer rv rv--right">
-          <span class="layer-idx" aria-hidden="true">ii.</span>
-          <h3>Ontologos<small>Transform</small></h3>
-          <p>Orchestration and NLP anchoring to discriminate the underlying sentimental affect signal.</p>
-          <figure class="layer-visual layer-visual--bare rv rv--curtain">
-            <img src="assets/assets/img/architecture/phase-ontologos-v4.png" width="1024" height="1024" alt="Abstract phase illustration for Ontologos transform" loading="lazy">
+          <div class="layer-copy">
+            <h3>Ontologos<small>Transform</small></h3>
+            <p>Orchestration and NLP anchoring discriminate the underlying affect signal.</p>
+          </div>
+        </li>
+        <li class="layer rv rv--left">
+          <span class="layer-idx" aria-hidden="true">03</span>
+          <figure class="layer-visual layer-visual--bare">
+            <picture>
+              <source type="image/avif" srcset="assets/assets/img/architecture/semba-protection-light-320.avif 320w, assets/assets/img/architecture/semba-protection-light-640.avif 640w" sizes="(max-width: 860px) 104px, 220px">
+              <source type="image/webp" srcset="assets/assets/img/architecture/semba-protection-light-320.webp 320w, assets/assets/img/architecture/semba-protection-light-640.webp 640w" sizes="(max-width: 860px) 104px, 220px">
+              <img src="assets/assets/img/architecture/semba-protection-light.png" width="1254" height="1254" alt="Layered infrastructure and topology illustration for Semba protection" loading="lazy" decoding="async">
+            </picture>
           </figure>
-        </div>
-        <div class="layer rv rv--left">
-          <span class="layer-idx" aria-hidden="true">iii.</span>
-          <h3>Semba<small>Protect</small></h3>
-          <p>A reticular affective topology held behind a multilayered organisational and infrastructure moat.</p>
-          <figure class="layer-visual layer-visual--bare rv rv--curtain">
-            <img src="assets/assets/img/architecture/phase-semba-v5.png" width="1024" height="1024" alt="Abstract phase illustration for Semba protect" loading="lazy">
+          <div class="layer-copy">
+            <h3>Semba<small>Protect</small></h3>
+            <p>A multilayered organisational and infrastructure moat protects the affective topology.</p>
+          </div>
+        </li>
+        <li class="layer rv rv--right">
+          <span class="layer-idx" aria-hidden="true">04</span>
+          <figure class="layer-visual layer-visual--bare">
+            <picture>
+              <source type="image/avif" srcset="assets/assets/img/architecture/insightvault-analytics-light-320.avif 320w, assets/assets/img/architecture/insightvault-analytics-light-640.avif 640w" sizes="(max-width: 860px) 104px, 220px">
+              <source type="image/webp" srcset="assets/assets/img/architecture/insightvault-analytics-light-320.webp 320w, assets/assets/img/architecture/insightvault-analytics-light-640.webp 640w" sizes="(max-width: 860px) 104px, 220px">
+              <img src="assets/assets/img/architecture/insightvault-analytics-light.png" width="1312" height="1199" alt="Analytics dashboard and API illustration for Insightvault understanding" loading="lazy" decoding="async">
+            </picture>
           </figure>
-        </div>
-        <div class="layer rv rv--right">
-          <span class="layer-idx" aria-hidden="true">iv.</span>
-          <h3>Insightvault<small>Understand</small></h3>
-          <div>
+          <div class="layer-copy">
+            <h3>Insightvault<small>Understand</small></h3>
             <p>Analysing population-level sentiment via 3D contour maps and self-optimising drift/anomaly algorithms.</p>
             <a class="layer-link" href="insightvault.html">Explore Insightvault</a>
           </div>
-          <figure class="layer-visual layer-visual--bare rv rv--curtain">
-            <img src="assets/assets/img/architecture/phase-insightvault-v4.png" width="1024" height="1024" alt="Abstract phase illustration for Insightvault understand" loading="lazy">
-          </figure>
-        </div>
-      </div>
+        </li>
+      </ol>
     </div>
   </section>
 
-  <section class="section" style="padding-top:0" aria-label="The team behind the build">
+  <section class="section section-pad-0" aria-label="The team behind the build">
     <div class="wrap">
       <div class="card-duo card-duo--stack">
         <div class="card card--dev rv">
           <div class="dev-figure" aria-hidden="true">
-            <img src="assets/img/carter-cutout.png" alt="" width="825" height="1100" loading="lazy">
+            <picture>
+              <source type="image/avif" srcset="assets/img/carter-cutout-320.avif 320w, assets/img/carter-cutout-640.avif 640w" sizes="(max-width: 760px) 200px, 290px">
+              <source type="image/webp" srcset="assets/img/carter-cutout-320.webp 320w, assets/img/carter-cutout-640.webp 640w" sizes="(max-width: 760px) 200px, 290px">
+              <img src="assets/img/carter-cutout.png" alt="" width="825" height="1100" loading="lazy" decoding="async">
+            </picture>
           </div>
           <div class="dev-body">
-            <p class="eyebrow" style="margin-bottom:.8rem">Engineering</p>
+            <p class="eyebrow mb-08">Engineering</p>
             <h3>Lead Developer</h3>
             <p class="role">Carter Manahan</p>
             <p>First-Class BSc (Hons) in Digital Media. Specialist in UX engineering and product design.</p>
@@ -134,13 +171,13 @@
     </div>
   </section>
 
-  <section class="band-cream section" data-lines="light" aria-labelledby="intern-title">
+  <section class="band-cream section" data-lines="light" aria-labelledby="careers-title">
     <div class="wrap">
       <div class="cta-inner">
-        <p class="eyebrow eyebrow--bare rv">Internship programme</p>
-        <h2 id="intern-title" class="display-lg rv" style="--d:.08s">Join the <em>story.</em></h2>
-        <p class="lede rv" style="--d:.15s; margin-inline:auto">Part-time internships are occasionally available for exceptional junior and undergraduate candidates with experience or an interest in NLP, data science, linguistics, or transformer models. If you would like to be part of this ground-breaking story, we would like to hear from you.</p>
-        <div class="cta-actions rv" style="--d:.22s">
+        <p class="eyebrow eyebrow--bare rv">Early career opportunities</p>
+        <h2 id="careers-title" class="display-lg rv d-08">Join the <em>story.</em></h2>
+        <p class="lede rv d-15 mx-auto">We occasionally welcome exceptional junior and undergraduate candidates with experience or an interest in NLP, data science, linguistics, or transformer models. If you would like to contribute to this ground-breaking work, we would like to hear from you.</p>
+        <div class="cta-actions rv d-22">
           <a class="btn btn--ink" href="mailto:devops@cognitifgroup.ai"><span>Email your CV</span><span class="arrow" aria-hidden="true">→</span></a>
         </div>
       </div>
@@ -150,7 +187,6 @@
 </main>
 
 <footer class="site-footer">
-  <hr class="divider">
   <div class="wrap">
     <a class="foot-brand" href="index.html">
       <img src="assets/img/logo-mark.png" alt="" width="46" height="46" loading="lazy">
@@ -169,6 +205,6 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js?v=20" defer></script>
+<script src="assets/js/main.js?v=25" defer></script>
 </body>
 </html>
