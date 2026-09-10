@@ -47,6 +47,12 @@
       applyTheme(doc.getAttribute("data-theme") === "dark" ? "light" : "dark", true);
     });
   }
+  window.addEventListener("message", function (event) {
+    if (event.origin !== window.location.origin) return;
+    if (!event.data || event.data.type !== "cognitif-theme") return;
+    if (event.data.theme !== "light" && event.data.theme !== "dark") return;
+    applyTheme(event.data.theme, false);
+  });
 
   /* every canvas registers a repaint hook so a theme change is instant
      even when its animation loop is paused off-screen */

@@ -1,0 +1,13 @@
+# Local-only Petalyx development build — never deploy.
+# Rebuild with: cd ../petalyx-source && node tools/build-demo.mjs
+demo/petalyx/dev.html
+demo/petalyx/petalyx.dev.js
+
+# Secrets. PETALYX_WIDGET_KEY and PETALYX_BASE_URL live here locally and
+# in the Vercel project environment in deployment — never in the repo.
+.env
+.env.*
+!.env.example
+
+node_modules/
+.vercel/

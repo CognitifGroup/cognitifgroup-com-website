@@ -1,6 +1,6 @@
 /* ============================================================
    COGNITIF GROUP — shared behaviour
-   nav · reveals · Petalyx graphic · scroll hero · ember trail
+   nav · reveals · Petalyx graphic · scroll hero
    ============================================================ */
 (function () {
   "use strict";
@@ -8,6 +8,62 @@
   var doc = document.documentElement;
   var motionOK = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (motionOK) doc.classList.add("motion-ok");
+  var finePointer = window.matchMedia("(pointer: fine)").matches;
+
+  /* ----------------------------------------------------------
+     Theme — light by default; an explicit choice persists.
+  ---------------------------------------------------------- */
+  var themeButtons = document.querySelectorAll(".theme-toggle");
+  var themeFrames = document.querySelectorAll(".hx-logo-animation iframe");
+  function syncEmbeddedTheme(theme) {
+    themeFrames.forEach(function (frame) {
+      if (frame.contentWindow) {
+        frame.contentWindow.postMessage({ type: "cognitif-theme", theme: theme }, window.location.origin);
+      }
+    });
+  }
+  function syncThemeImages(theme) {
+    var dark = theme === "dark";
+    document.querySelectorAll("[data-theme-src-light][data-theme-src-dark]").forEach(function (img) {
+      var next = img.getAttribute(dark ? "data-theme-src-dark" : "data-theme-src-light");
+      if (next && img.getAttribute("src") !== next) img.setAttribute("src", next);
+    });
+    document.querySelectorAll("[data-theme-srcset-light][data-theme-srcset-dark]").forEach(function (source) {
+      var next = source.getAttribute(dark ? "data-theme-srcset-dark" : "data-theme-srcset-light");
+      if (next && source.getAttribute("srcset") !== next) source.setAttribute("srcset", next);
+    });
+  }
+  function syncThemeControls() {
+    var dark = doc.getAttribute("data-theme") === "dark";
+    var action = dark ? "Switch to light mode" : "Switch to dark mode";
+    themeButtons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(dark));
+      button.setAttribute("aria-label", action);
+      button.setAttribute("title", action);
+    });
+    var themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.setAttribute("content", dark ? "#0d1428" : "#f7f2e5");
+    syncThemeImages(dark ? "dark" : "light");
+    syncEmbeddedTheme(dark ? "dark" : "light");
+  }
+  function setTheme(theme) {
+    doc.setAttribute("data-theme", theme);
+    doc.style.colorScheme = theme;
+    try { window.localStorage.setItem("cognitif-theme", theme); } catch (e) {}
+    syncThemeControls();
+    window.dispatchEvent(new Event("resize"));
+  }
+  syncThemeControls();
+  themeFrames.forEach(function (frame) {
+    frame.addEventListener("load", function () {
+      syncEmbeddedTheme(doc.getAttribute("data-theme") === "dark" ? "dark" : "light");
+    });
+  });
+  themeButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setTheme(doc.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    });
+  });
 
   var clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };
   var lerp = function (a, b, t) { return a + (b - a) * t; };
@@ -345,37 +401,6 @@
     window.addEventListener("scroll", wake, { passive: true });
     window.addEventListener("resize", wake);
     wake();
-  }
-
-  /* ----------------------------------------------------------
-     Ember cursor trail — inner pages, fine pointers only
-  ---------------------------------------------------------- */
-  var emberHost = document.querySelector(".ember");
-  var finePointer = window.matchMedia("(pointer: fine)").matches;
-  if (emberHost && motionOK && finePointer) {
-    doc.classList.add("ember-on");
-    var dots = Array.prototype.slice.call(emberHost.querySelectorAll("span"));
-    var speeds = [0.035, 0.06, 0.1];
-    var mx = window.innerWidth / 2, my = window.innerHeight * 0.4;
-    var pts = dots.map(function () { return { x: mx, y: my }; });
-    var emberLive = false;
-
-    window.addEventListener("pointermove", function (e) {
-      mx = e.clientX; my = e.clientY;
-      if (!emberLive) { emberLive = true; requestAnimationFrame(emberFrame); }
-    }, { passive: true });
-
-    function emberFrame() {
-      var still = 0;
-      pts.forEach(function (pt, i) {
-        pt.x = lerp(pt.x, mx, speeds[i]);
-        pt.y = lerp(pt.y, my, speeds[i]);
-        if (Math.abs(pt.x - mx) + Math.abs(pt.y - my) < 0.3) still++;
-        dots[i].style.transform = "translate3d(" + pt.x + "px," + pt.y + "px,0)";
-      });
-      if (still === pts.length) { emberLive = false; return; }
-      requestAnimationFrame(emberFrame);
-    }
   }
 
   /* ----------------------------------------------------------
@@ -939,6 +964,7 @@
     var mx = -1e5, my = -1e5, ex = -1e5, ey = -1e5, bound = false;
     var N = 15;
     return function (ctx, W, H, te, canvas) {
+      var dark = doc.getAttribute("data-theme") === "dark";
       if (!bound) {
         bound = true;
         if (finePointer && motionOK) {
@@ -982,7 +1008,7 @@
         ctx.lineTo(xEnd, rowY + 1.5);
         ctx.lineTo(0, rowY + 1.5);
         ctx.closePath();
-        ctx.fillStyle = "rgba(247,242,229,0.85)";
+        ctx.fillStyle = dark ? "rgb(12,19,38)" : "rgba(247,242,229,0.85)";
         ctx.fill();
         ctx.beginPath();
         ctx.moveTo(0, rowY);
@@ -997,19 +1023,19 @@
           ctx.lineTo(x2, rowY - h2);
         }
         ctx.strokeStyle = copperRow
-          ? "rgba(160,95,60," + (0.34 * rowF).toFixed(3) + ")"
-          : "rgba(58,66,98," + (0.22 * rowF).toFixed(3) + ")";
+          ? "rgba(" + (dark ? "198,123,82" : "160,95,60") + "," + (0.34 * rowF).toFixed(3) + ")"
+          : "rgba(" + (dark ? "133,157,194" : "58,66,98") + "," + ((dark ? 0.3 : 0.22) * rowF).toFixed(3) + ")";
         ctx.lineWidth = 1;
         ctx.stroke();
 
         /* depth scale tick at the left edge of every third stratum */
         if (i % 3 === 0 && !narrow) {
           var tickA = 0.3 * rowF;
-          ctx.strokeStyle = "rgba(58,66,98," + tickA.toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(" + (dark ? "133,157,194" : "58,66,98") + "," + tickA.toFixed(3) + ")";
           ctx.beginPath();
           ctx.moveTo(W * 0.028, rowY); ctx.lineTo(W * 0.028 + 12, rowY);
           ctx.stroke();
-          ctx.fillStyle = "rgba(58,66,98," + (tickA * 0.9).toFixed(3) + ")";
+          ctx.fillStyle = "rgba(" + (dark ? "180,196,219" : "58,66,98") + "," + (tickA * 0.9).toFixed(3) + ")";
           ctx.font = "500 13px 'DM Sans', sans-serif";
           ctx.textAlign = "left";
           ctx.fillText("−" + (20 + i * 12) + " m", W * 0.028 + 18, rowY + 3);
@@ -1034,7 +1060,7 @@
           var drop = smooth(clamp(age / 0.55, 0, 1));
           var fadeS = 1 - smooth(clamp((age - 1.6) / 0.8, 0, 1));
           var yTop = H * 0.14;
-          ctx.strokeStyle = "rgba(166,98,62," + (0.5 * fadeS).toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(" + (dark ? "224,154,108" : "166,98,62") + "," + (0.5 * fadeS).toFixed(3) + ")";
           ctx.setLineDash([4, 6]);
           ctx.beginPath();
           ctx.moveTo(s.x, yTop);
@@ -1043,13 +1069,13 @@
           ctx.setLineDash([]);
           if (age > 0.55) {
             var ringAge = clamp((age - 0.55) / 1.2, 0, 1);
-            ctx.strokeStyle = "rgba(166,98,62," + (0.45 * (1 - ringAge) * fadeS).toFixed(3) + ")";
+            ctx.strokeStyle = "rgba(" + (dark ? "224,154,108" : "166,98,62") + "," + (0.45 * (1 - ringAge) * fadeS).toFixed(3) + ")";
             ctx.beginPath();
             ctx.ellipse(s.x, rowY, 8 + ringAge * 60, (8 + ringAge * 60) * 0.32, 0, 0, 6.2832);
             ctx.stroke();
-            ctx.fillStyle = "rgba(140,78,46," + (0.9 * fadeS).toFixed(3) + ")";
+            ctx.fillStyle = "rgba(" + (dark ? "224,154,108" : "140,78,46") + "," + (0.9 * fadeS).toFixed(3) + ")";
             ctx.beginPath(); ctx.arc(s.x, rowY, 2.4, 0, 6.2832); ctx.fill();
-            ctx.fillStyle = "rgba(24,32,64," + (0.6 * fadeS).toFixed(3) + ")";
+            ctx.fillStyle = "rgba(" + (dark ? "213,222,235" : "24,32,64") + "," + (0.6 * fadeS).toFixed(3) + ")";
             ctx.font = "500 13px 'DM Sans', sans-serif";
             ctx.textAlign = "left";
             ctx.fillText("−" + s.depth + " m", s.x + 12, rowY - 10);
@@ -1353,8 +1379,8 @@
     };
   }
 
-  /* Just a Minute — a chronograph: sixty ticks, a copper sweep,
-     and a shimmering ring of reaction-time readings */
+  /* Just a Minute — a numberless chronograph with a discrete
+     one-second hand and a ring of reaction-time readings. */
   function makeMinute() {
     return function (ctx, W, H, te) {
       var cx = W > 860 ? W * 0.68 : W * 0.5;
@@ -1372,7 +1398,13 @@
       ctx.arc(0, 0, R, -1.5708, -1.5708 + intro * 6.2832);
       ctx.stroke();
 
-      var prog = motionOK ? ((te % 12) / 12) : 0.42;
+      var tickTime = Math.max(0, te - 1.05);
+      var tickIndex = Math.floor(tickTime) % 60;
+      var tickPhase = tickTime - Math.floor(tickTime);
+      var tickAdvance = tickPhase < 0.12
+        ? 1 - Math.pow(1 - tickPhase / 0.12, 3)
+        : 1;
+      var prog = motionOK ? (tickIndex + tickAdvance) / 60 : 0.42;
       var sweepA = -1.5708 + prog * 6.2832;
 
       ctx.save();
@@ -1398,14 +1430,13 @@
 
       var sweepFade = smooth(clamp((te - 1.05) / 0.55, 0, 1));
       if (sweepFade > 0.001) {
-        var SEG = 40;
-        for (var s = 0; s < SEG; s++) {
-          var a1 = sweepA - (s + 1) * 0.05, a2 = sweepA - s * 0.05;
-          ctx.strokeStyle = "rgba(166,98,62," + (0.45 * (1 - s / SEG) * sweepFade).toFixed(3) + ")";
-          ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(0, 0, R - 26, a1, a2 + 0.006); ctx.stroke();
-        }
         var hx = Math.cos(sweepA) * (R - 26), hy = Math.sin(sweepA) * (R - 26);
+        ctx.strokeStyle = "rgba(140,78,46," + (0.72 * sweepFade).toFixed(3) + ")";
+        ctx.lineWidth = 1.6;
+        ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(hx, hy); ctx.stroke();
+        ctx.fillStyle = "rgba(24,32,64," + (0.82 * sweepFade).toFixed(3) + ")";
+        ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, 6.2832); ctx.fill();
         ctx.fillStyle = "rgba(140,78,46," + (0.95 * sweepFade).toFixed(3) + ")";
         ctx.beginPath(); ctx.arc(hx, hy, 3, 0, 6.2832); ctx.fill();
       }
@@ -1865,4 +1896,500 @@
   }
   document.querySelectorAll("[data-compass]").forEach(buildCompass);
 
+  /* ----------------------------------------------------------
+     Petalyx range — a carousel of editions, and the sandboxed
+     demo that opens out of whichever one is chosen.
+
+     The posters are built from demo/petalyx/editions.json, which
+     petalyx-source/tools/build-demo.mjs generates from the edition
+     config files themselves. Nothing about an edition is described
+     twice, so a card cannot look one way here and behave another way
+     when it launches.
+  ---------------------------------------------------------- */
+  var pxRange = document.getElementById("px-range");
+  if (pxRange) (function () {
+    var BASE     = "demo/petalyx/";
+    var rail     = document.getElementById("px-rail");
+    var note     = document.getElementById("px-rail-note");
+    var viewport = document.getElementById("px-stage-viewport");
+    var stageName = document.getElementById("px-stage-name");
+    var stageSub  = document.getElementById("px-stage-sub");
+
+    var overlay  = document.getElementById("px-overlay");
+    var panel    = overlay.querySelector(".px-overlay__panel");
+    var loading  = document.getElementById("px-stage-loading");
+    var errorBox = document.getElementById("px-stage-error");
+    var errorNote = document.getElementById("px-stage-error-note");
+
+    var editions = [];
+    var frame = null;      // the live iframe for the running session
+    var openId = null;     // which edition that iframe is running
+    var lastCard = null;   // the card the overlay grew out of
+    var lastFocus = null;  // where focus goes when the overlay closes
+
+    // The dev build is gitignored, so it only exists on a machine that
+    // has run the build. Locally, prefer it; anywhere else, and if it
+    // is simply not there, use the release build.
+    var LOCAL = /^(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)$/.test(window.location.hostname);
+    var demoFile = BASE + "index.html";
+
+    // A plain GET rather than a HEAD: some static servers answer HEAD
+    // with a 405 or abort it, and getting that wrong would quietly drop
+    // you onto the release build while you are trying to develop. This
+    // only ever runs on localhost, and it warms the cache for the frame
+    // that is about to load the same file.
+    function pickDemoFile() {
+      if (!LOCAL) return Promise.resolve();
+      return fetch(BASE + "dev.html")
+        .then(function (r) { if (r.ok) demoFile = BASE + "dev.html"; })
+        .catch(function () { /* release build it is */ });
+    }
+
+    /* ---- posters ---- */
+
+    // Fonts are per edition and there are nine of them, so each one is
+    // fetched only once its card has actually been seen.
+    var fontsAsked = {};
+    function wantFont(href) {
+      if (!href || fontsAsked[href]) return;
+      fontsAsked[href] = true;
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
+    }
+
+    // The same fan the widget's own start screen draws: the cast either
+    // side, and the result still face down in the middle.
+    function castFan(ed) {
+      var cast = ed.cast || [];
+      if (cast.length < 3) return "";
+      var half = Math.floor(cast.length / 2);
+      var seats = cast.slice(0, half).map(function (c) { return { c: c }; })
+        .concat([{ you: true }])
+        .concat(cast.slice(half).map(function (c) { return { c: c }; }));
+      var centre = (seats.length - 1) / 2;
+
+      return seats.map(function (seat, i) {
+        var d = i - centre, away = Math.abs(d);
+        var style = "--r:" + (d * 7).toFixed(1) + "deg" +
+                    ";--y:" + (Math.pow(away, 1.6) * 4).toFixed(1) + "px" +
+                    ";--s:" + (1 - away * 0.05).toFixed(3);
+        if (seat.you) return '<span class="px-card__seat px-card__seat--you" style="' + style + '">?</span>';
+        var inner = seat.c.photo
+          ? '<img src="' + BASE + seat.c.photo + '" alt="" loading="lazy" />'
+          : seat.c.svg;
+        return '<span class="px-card__seat" style="' + style + '">' + inner + "</span>";
+      }).join("");
+    }
+
+    function poster(ed) {
+      var t = ed.theme || {};
+      var li = document.createElement("li");
+      // An edition without a gateway version has no real session behind
+      // it. It still shows — the range is the point — but it cannot be
+      // opened onto placeholder words.
+      li.className = "px-card" + (ed.launchable ? "" : " is-soon");
+      li.dataset.edition = ed.id;
+      li.style.cssText = [
+        "--tint:" + t.accent,
+        "--tint-soft:" + (t.accentSoft || t.accent),
+        "--surface:" + t.bg,
+        "--surface-image:" + (t.poster || t.bgImage || t.bg),
+        "--poster-ink:" + (t.posterInk || t.ink),
+        "--card-font:" + (ed.fonts && ed.fonts.display ? ed.fonts.display : "inherit")
+      ].join(";");
+
+      var mark = ed.mark && ed.mark.type === "image"
+        ? '<img src="' + BASE + ed.mark.src + '" alt="" loading="lazy" />'
+        : (ed.mark ? ed.mark.svg : "");
+
+      var open = ed.launchable
+        ? '<button class="px-card__face" type="button" data-px-open="' + ed.id + '">'
+        : '<div class="px-card__face" aria-disabled="true">';
+      var close = ed.launchable ? "</button>" : "</div>";
+      var cue = ed.launchable
+        ? '<span class="px-card__cue">Run this edition &rarr;</span>'
+        : '<span class="px-card__cue px-card__cue--soon">More editions coming</span>';
+
+      li.innerHTML =
+        open +
+          // Optional per-edition photography (see IMAGES.md in
+          // petalyx-source). Without it the poster stands on the
+          // edition's own palette and typeface.
+          (ed.photo ? '<img class="px-card__photo" src="' + BASE + ed.photo + '" alt="" loading="lazy" />' : "") +
+          '<span class="px-card__cast" aria-hidden="true">' + castFan(ed) + "</span>" +
+          '<span class="px-card__wash" aria-hidden="true"></span>' +
+          '<span class="px-card__head"><span class="px-card__name">' + ed.name + "</span>" +
+            '<span class="px-card__mark" aria-hidden="true">' + mark + "</span></span>" +
+          '<span class="px-card__body">' +
+            '<span class="px-card__kicker">' + ed.sub + "</span>" +
+            '<span class="px-card__q">' + ed.tagline + "</span>" +
+            cue +
+          "</span>" +
+        close +
+        '<p class="px-card__blurb">' + ed.blurb + "</p>";
+
+      // A portrait that never arrives leaves its frame empty rather than
+      // showing a broken image; the fan holds its shape either way.
+      li.querySelectorAll("img").forEach(function (img) {
+        img.onerror = function () { img.remove(); };
+      });
+      return li;
+    }
+
+    function build(list) {
+      editions = list;
+      list.forEach(function (ed) { rail.appendChild(poster(ed)); });
+      pxRange.dataset.state = "idle";
+      // No running count of what is unfinished. The posters already say
+      // which ones can be opened, and an edition that is not ready yet
+      // is not something a visitor needs a tally of.
+      note.textContent = "Choose an edition to run it — one instrument, every skin.";
+      syncArrows();
+
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            var ed = byId(e.target.dataset.edition);
+            if (ed && ed.fonts) wantFont(ed.fonts.href);
+            io.unobserve(e.target);
+          });
+        }, { root: rail, rootMargin: "200px" });
+        rail.querySelectorAll(".px-card").forEach(function (c) { io.observe(c); });
+      } else {
+        list.forEach(function (ed) { wantFont(ed.fonts && ed.fonts.href); });
+      }
+    }
+
+    function byId(id) {
+      for (var i = 0; i < editions.length; i++) if (editions[i].id === id) return editions[i];
+      return null;
+    }
+
+    /* ---- rail paging ---- */
+    function syncArrows() {
+      var max = rail.scrollWidth - rail.clientWidth - 4;
+      pxRange.querySelectorAll("[data-px-dir]").forEach(function (btn) {
+        var fwd = +btn.dataset.pxDir > 0;
+        btn.classList.toggle("is-off", fwd ? rail.scrollLeft >= max : rail.scrollLeft <= 4);
+      });
+    }
+    pxRange.querySelectorAll("[data-px-dir]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var card = rail.querySelector(".px-card");
+        var step = card ? card.getBoundingClientRect().width + 20 : 300;
+        rail.scrollBy({ left: step * (+btn.dataset.pxDir), behavior: motionOK ? "smooth" : "auto" });
+      });
+    });
+    rail.addEventListener("scroll", syncArrows, { passive: true });
+    window.addEventListener("resize", syncArrows);
+
+    /* ---- the cards that were not chosen ----
+       They leave in the direction they already sit, nearest first, so it
+       reads as the range clearing out of the way rather than a fade. */
+    function scatter(chosenCard) {
+      if (!motionOK) return;
+      var pivot = chosenCard.getBoundingClientRect();
+      var pivotX = pivot.left + pivot.width / 2;
+
+      rail.querySelectorAll(".px-card").forEach(function (card) {
+        if (card === chosenCard) { card.classList.add("is-chosen"); return; }
+        var r = card.getBoundingClientRect();
+        var away = (r.left + r.width / 2) - pivotX;
+        var dir = away < 0 ? -1 : 1;
+        var rank = Math.min(4, Math.round(Math.abs(away) / Math.max(r.width, 1)));
+        card.style.setProperty("--dx", (dir * (140 + rank * 90)).toFixed(0) + "px");
+        card.style.setProperty("--dy", (18 + rank * 14).toFixed(0) + "px");
+        card.style.setProperty("--rot", (dir * (5 + rank * 2)).toFixed(0) + "deg");
+        card.style.setProperty("--delay", (rank * 0.045).toFixed(3) + "s");
+        card.classList.add("is-leaving");
+      });
+    }
+
+    function clearScatter() {
+      rail.querySelectorAll(".px-card").forEach(function (card) {
+        card.classList.remove("is-leaving", "is-chosen");
+        ["--dx", "--dy", "--rot", "--delay"].forEach(function (v) { card.style.removeProperty(v); });
+      });
+    }
+
+    /* ---- growing the panel out of the thing that was pressed ----
+       Measure the origin element, measure the panel where it has come to
+       rest, and set the transform that would put one on top of the other.
+       Removing that transform on the next tick plays it forwards.
+
+       The scale is uniform. A non-uniform one would match the card's
+       proportions exactly and stretch every glyph inside the panel on
+       the way out, which costs more than the extra fidelity buys. */
+    function growFrom(el) {
+      if (!motionOK || !el) { overlay.dataset.anim = "open"; return; }
+      var from = el.getBoundingClientRect();
+      var to = panel.getBoundingClientRect();
+      if (!to.width || !to.height) { overlay.dataset.anim = "open"; return; }
+
+      var scale = Math.max(0.05, Math.min(1, from.width / to.width));
+      var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+      var dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+
+      overlay.dataset.anim = "from";
+      panel.style.transition = "none";
+      panel.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px) scale(" + scale.toFixed(4) + ")";
+      void panel.offsetHeight;          // flush, so there is a start value
+      panel.style.transition = "";
+      overlay.dataset.anim = "to";
+      window.setTimeout(function () {
+        if (overlay.dataset.anim !== "to") return;
+        // Drop the inline start transform as the state changes. Leaving
+        // it in place would put the panel straight back at card size the
+        // moment the "to" rule that overrode it stopped applying.
+        panel.style.transform = "";
+        overlay.dataset.anim = "open";
+      }, 560);
+    }
+
+    function shrinkTo(el, done) {
+      if (!motionOK) { done(); return; }
+      var to = panel.getBoundingClientRect();
+      var from = el && el.getBoundingClientRect();
+      if (from && from.width && to.width) {
+        var scale = Math.max(0.05, Math.min(1, from.width / to.width));
+        var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+        var dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+        panel.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px) scale(" + scale.toFixed(4) + ")";
+      }
+      overlay.dataset.anim = "out";
+      window.setTimeout(done, 340);
+    }
+
+    /* ---- the page behind the overlay ----
+       overflow:hidden on body is ignored by iOS Safari, so the page is
+       pinned with position:fixed and the scroll position put back by
+       hand afterwards. */
+    var lockedAt = 0;
+    function lockPage() {
+      lockedAt = window.scrollY || window.pageYOffset || 0;
+      document.body.style.top = (-lockedAt) + "px";
+      document.body.classList.add("px-locked");
+    }
+    function unlockPage() {
+      if (!document.body.classList.contains("px-locked")) return;
+      document.body.classList.remove("px-locked");
+      document.body.style.top = "";
+      // While the body was fixed the document was only a viewport tall,
+      // so the scroll range had collapsed. Force the layout back before
+      // asking for the old position or the request is clamped to zero —
+      // and ask for it instantly, since this site scrolls smoothly and
+      // an animated jump back up the page is not what was wanted.
+      void document.documentElement.scrollHeight;
+      window.scrollTo({ top: lockedAt, left: 0, behavior: "instant" });
+    }
+
+    /* ---- focus ----
+       An overlay that leaves the tab order running through the page
+       behind it is unusable with a keyboard and lies to a screen reader. */
+    function focusables() {
+      return [].slice.call(panel.querySelectorAll(
+        'button:not([disabled]), [href], iframe, [tabindex]:not([tabindex="-1"])'
+      )).filter(function (el) { return el.offsetParent !== null || el.tagName === "IFRAME"; });
+    }
+    function trapFocus(e) {
+      if (e.key !== "Tab" || overlay.hidden) return;
+      var list = focusables();
+      if (!list.length) return;
+      var first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+
+    /* ---- the frame, and knowing whether it actually started ---- */
+    var readyTimer = 0;
+
+    function showState(which, note) {
+      loading.hidden = which !== "loading";
+      errorBox.hidden = which !== "error";
+      if (note) errorNote.textContent = note;
+      overlay.dataset.ready = which === "ready" ? "1" : "0";
+    }
+
+    function mountFrame(id) {
+      var ed = byId(id) || {};
+      var f = document.createElement("iframe");
+      f.title = "Petalyx demonstration — " + (ed.name || "") + " edition";
+      f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-downloads");
+      f.setAttribute("allow", "fullscreen; web-share");
+      f.setAttribute("referrerpolicy", "same-origin");
+      // A frame that 404s or is blocked fires no useful event of its own,
+      // so the demo reports its own boot and this is the deadline for it.
+      f.addEventListener("error", function () {
+        showState("error", "The demonstration could not be loaded.");
+      });
+      f.src = demoFile + "?edition=" + encodeURIComponent(id);
+      viewport.appendChild(f);
+
+      showState("loading");
+      window.clearTimeout(readyTimer);
+      readyTimer = window.setTimeout(function () {
+        if (overlay.dataset.ready === "1") return;
+        showState("error", "It didn’t finish starting. This is usually a hiccup rather than anything broken.");
+      }, 8000);
+      return f;
+    }
+
+    function open(id, origin) {
+      var ed = byId(id);
+      if (!ed) return;
+      // The card, not the button inside it: the scatter compares against
+      // the .px-card elements, and growing the panel out of the button
+      // alone would start it from the wrong rectangle.
+      var opener = rail.querySelector('[data-px-open="' + id + '"]');
+      var card = opener ? opener.closest(".px-card") : null;
+      if (card) lastCard = card;
+      lastFocus = document.activeElement;
+
+      if (frame && openId !== id) destroy();
+
+      panel.style.setProperty("--stage-tint", ed.theme.accent);
+      overlay.style.setProperty("--stage-tint", ed.theme.accent);
+      stageName.textContent = ed.name;
+      stageSub.textContent = ed.sub;
+
+      overlay.hidden = false;
+      lockPage();
+
+      if (!frame) { frame = mountFrame(id); openId = id; }
+      else { frame.style.display = ""; }
+
+      panel.style.transform = "";
+      var from = origin || lastCard;
+      growFrom(from);
+      // Only when it came out of the rail. Resuming comes from the dock,
+      // and the rail is already sitting there intact behind it.
+      if (from && from === lastCard) scatter(lastCard);
+
+      document.addEventListener("keydown", trapFocus, true);
+      window.setTimeout(function () {
+        var btn = panel.querySelector(".px-stage__btn");
+        if (btn) btn.focus({ preventScroll: true });
+      }, motionOK ? 380 : 0);
+    }
+
+    function leave(target, after) {
+      document.removeEventListener("keydown", trapFocus, true);
+      shrinkTo(target, function () {
+        overlay.hidden = true;
+        overlay.dataset.anim = "";
+        panel.style.transform = "";
+        unlockPage();
+        clearScatter();
+        syncArrows();
+        if (after) after();
+        if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+      });
+    }
+
+    function destroy() {
+      window.clearTimeout(readyTimer);
+      if (frame) { frame.remove(); frame = null; }
+      openId = null;
+      showState("loading");
+    }
+
+    function close() {
+      if (overlay.hidden) { destroy(); return; }
+      leave(lastCard, function () { destroy(); });
+    }
+
+    function retry() {
+      if (!openId) return;
+      var id = openId;
+      destroy();
+      frame = mountFrame(id);
+      openId = id;
+    }
+
+    /* ---- wiring ---- */
+    function act(name) {
+      if (name === "close") close();
+      else if (name === "retry") retry();
+    }
+
+    document.addEventListener("click", function (e) {
+      var opener = e.target.closest("[data-px-open]");
+      if (opener && pxRange.contains(opener)) {
+        open(opener.dataset.pxOpen, opener.closest(".px-card"));
+        return;
+      }
+      var button = e.target.closest("[data-px-act]");
+      if (button) act(button.dataset.pxAct);
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !overlay.hidden) { e.preventDefault(); close(); }
+    });
+
+    // The widget reports its own boot, and asks to be closed when a
+    // visitor picks "try another edition". Everything arriving here is
+    // untrusted: messages are accepted only from the frame we mounted,
+    // only three intents are acted on, and nothing in the payload is
+    // read back into the page.
+    window.addEventListener("message", function (e) {
+      if (!frame || e.source !== frame.contentWindow) return;
+      var d = e.data;
+      if (!d || d.source !== "petalyx") return;
+      if (d.type === "ready") { window.clearTimeout(readyTimer); showState("ready"); }
+      // Only while it is still starting. Once it is up, a stumble inside
+      // the widget is not a reason to pull a session out from under
+      // someone who is halfway through it.
+      else if (d.type === "error" && overlay.dataset.ready !== "1") {
+        window.clearTimeout(readyTimer);
+        showState("error", "The demonstration reported a problem starting up.");
+      }
+      else if (d.type === "close") close();
+    });
+
+    pickDemoFile()
+      .then(function () { return fetch(BASE + "editions.json", { cache: "no-cache" }); })
+      .then(function (r) { if (!r.ok) throw new Error("editions.json " + r.status); return r.json(); })
+      .then(function (data) { build(data.editions || []); })
+      .catch(function () {
+        pxRange.dataset.state = "error";
+        note.textContent = "The Petalyx™ demonstration is unavailable just now.";
+      });
+  })();
+
+
+})();
+
+
+/* ---- anchor landing, after layout settles ----
+   Arriving at petalyx.html#demo, the browser jumps to the section
+   immediately, then the hero images and reveal animations above it
+   resolve and push it back down, leaving the visitor at the top of the
+   page wondering where the demo went. Re-running the jump once
+   everything has loaded puts them where the link promised.
+
+   Only ever on first load, and only for a hash that matches something
+   real, so it can never fight a visitor who has started scrolling. */
+(function () {
+  if (!window.location.hash) return;
+  var target;
+  try { target = document.querySelector(window.location.hash); } catch (e) { return; }
+  if (!target) return;
+
+  var settle = function () {
+    // A visitor who has already scrolled somewhere themselves is left
+    // alone; this is only for the case where nothing has moved yet.
+    if (window.scrollY > 4 && Math.abs(window.scrollY - lastJump) > 80) return;
+    lastJump = target.getBoundingClientRect().top + window.scrollY - 96;
+    window.scrollTo({ top: lastJump, behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
+  };
+  var lastJump = -999;
+
+  window.addEventListener("load", function () {
+    settle();
+    // Late-loading imagery can shift it once more.
+    window.setTimeout(settle, 260);
+  });
 })();

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Petalyx&trade; demo</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="same-origin" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="petalyx.940195f0.css" />
+</head>
+<body>
+
+  <!-- ambient themed backdrop: base wash, edition-drawn atmosphere,
+       an optional photographic horizon and a drawn particle layer. -->
+  <div id="backdrop"></div>
+  <div id="atmosphere"></div>
+  <div id="horizon" aria-hidden="true"></div>
+  <div id="ambient" aria-hidden="true"></div>
+
+  <!-- Optional panelled surface. A backdrop layer rather than a child of
+       the flower: it has to cover the whole viewport, and an oversized
+       element inside the canvas would add its own scroll to the page. -->
+  <svg id="ball" aria-hidden="true" preserveAspectRatio="none"></svg>
+
+  <!-- Screen-to-screen wipe. Inert unless the edition opts in. -->
+  <div id="wipe" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <!-- ============ START ============ -->
+  <div id="start-screen" class="screen">
+    <div class="hero">
+      <!-- Crest if the edition has one on disk, its badge text if not. -->
+      <div class="edition-crest" id="edition-crest" hidden></div>
+      <div class="edition-badge" id="edition-badge"></div>
+      <h1 id="start-title">Petalyx</h1>
+      <p id="start-blurb">Trust your instinct. See the word in the centre, tap the one around it that feels right. There are no wrong answers, only your first one.</p>
+
+      <!-- The payoff, shown before the work: the actual cast, and a
+           card where your result will be. Built by JS from the roster. -->
+      <div class="hero-preview" id="hero-preview" hidden aria-hidden="true"></div>
+
+      <button id="start-btn" class="primary-btn"><span>Begin</span></button>
+      <p class="hero-meta" id="start-meta">Around a minute &middot; nothing to sign up for</p>
+    </div>
+  </div>
+
+  <!-- ============ DEMOGRAPHIC ============
+       ICO: consent is an explicit tick plus a deliberate start, not
+       something inferred from the two demographic selections. The
+       three consent paragraphs below are fixed legal text and must
+       not be reworded per edition. ============ -->
+  <div id="demographic-screen" class="screen hidden">
+    <div class="sheet">
+      <h2>Before we begin</h2>
+      <div class="consent-text">
+        <p>This short activity is run by Cognitif Group Limited, acting as data controller. We collect anonymised response data for research into language and human behaviour.</p>
+        <p>Your selections and response times are recorded during this session. No personally identifiable information is stored. Demographic details are used only to generate an anonymised session code and are not kept.</p>
+        <p>By ticking the box below you consent to your anonymised data being used for these purposes. You may withdraw at any time using the Cancel button.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Gender</label>
+        <div class="option-group">
+          <button class="option-btn" data-field="gender" data-value="M">Male</button>
+          <button class="option-btn" data-field="gender" data-value="F">Female</button>
+          <button class="option-btn" data-field="gender" data-value="O">Other</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Age</label>
+        <div class="option-group">
+          <button class="option-btn" data-field="age_band" data-value="18-34">Under 35</button>
+          <button class="option-btn" data-field="age_band" data-value="35-54">35 to 54</button>
+          <button class="option-btn" data-field="age_band" data-value="55+">55 or over</button>
+        </div>
+      </div>
+
+      <!-- ICO: consent has to be a deliberate act, so it is its own
+           control rather than something inferred from the two
+           selections above. Nothing starts until all three are set. -->
+      <label class="consent-check" for="consent-box">
+        <input type="checkbox" id="consent-box" />
+        <span class="check-box" aria-hidden="true"></span>
+        <span class="check-text">I have read the above and consent to my anonymised responses being used for this research.</span>
+      </label>
+
+      <button id="begin-btn" class="primary-btn" disabled><span>Begin</span></button>
+      <p class="consent-note" id="consent-note">Pick both, tick the box, and you are away.</p>
+
+
+    </div>
+  </div>
+
+  <!-- ============ LOADING ============ -->
+  <div id="loading-screen" class="screen hidden">
+    <div class="bloom-loader" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="loading-text">Preparing your session&hellip;</p>
+  </div>
+
+  <!-- Optional physical surface for the session, opted into per edition
+       via config `surface`. It unrolls, the flower opens ON it, and it
+       rolls back up when the session ends. Sits before #session-screen
+       in the DOM so the flower paints on top of the parchment. -->
+  <div id="scroll-surface" class="hidden" aria-hidden="true">
+    <div class="scroll-sheet"><span class="scroll-seal" id="surface-seal"></span></div>
+    <div class="scroll-rod scroll-rod--top"></div>
+    <div class="scroll-rod scroll-rod--bottom"></div>
+  </div>
+
+  <!-- ============ SESSION ============ -->
+  <div id="session-screen" class="screen hidden">
+    <div id="progress-bar-container"><div id="progress-bar"></div></div>
+    <div id="iteration-counter"><span id="iter-now">1</span><span class="iter-sep">/</span><span id="iter-total">50</span></div>
+    <button id="cancel-btn">Cancel</button>
+
+    <div id="instruction">Tap what resonates</div>
+
+    <div id="stage">
+      <div id="canvas">
+        <!-- centre prompt, with the response countdown drawn as a ring
+             around it so the participant's eye never leaves the middle -->
+        <div id="prompt-petal">
+          <svg id="prompt-ring" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ring-track" cx="50" cy="50" r="47" />
+            <circle class="ring-fill"  cx="50" cy="50" r="47" />
+          </svg>
+          <span id="prompt-word"></span>
+        </div>
+
+        <div class="petal-slot" data-position="12"><button class="petal" type="button"></button></div>
+        <div class="petal-slot" data-position="2"><button class="petal" type="button"></button></div>
+        <div class="petal-slot" data-position="4"><button class="petal" type="button"></button></div>
+        <div class="petal-slot" data-position="6"><button class="petal nota-petal" type="button"></button></div>
+        <div class="petal-slot" data-position="8"><button class="petal" type="button"></button></div>
+        <div class="petal-slot" data-position="10"><button class="petal" type="button"></button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ END / REVEAL (populated by JS) ============ -->
+  <div id="end-screen" class="screen hidden"></div>
+
+  <!-- ============ FAIL (soft, non-alarming) ============ -->
+  <!-- ============ NOT YET BUILT ============
+       An edition with no version on the backend. Not an error, and
+       deliberately not the fail screen: nothing went wrong, this one
+       simply is not finished. Only Arsenal is live today. -->
+  <div id="soon-screen" class="screen hidden">
+    <div class="notice">
+      <div class="notice-mark">&middot;</div>
+      <h2>This one isn&rsquo;t ready yet</h2>
+      <p>Editions are being built one at a time. Arsenal is the only one live right now &mdash; the rest are on their way.</p>
+      <button type="button" class="primary-btn" data-act="to-arsenal"><span>Try Arsenal</span></button>
+    </div>
+  </div>
+
+  <div id="fail-screen" class="screen hidden">
+    <div class="notice">
+      <div class="notice-mark">&#8635;</div>
+      <h2>Let&rsquo;s try that again</h2>
+      <p>Something didn&rsquo;t quite register that time. No data was saved. Give it another go whenever you&rsquo;re ready.</p>
+      <button id="retry-btn" class="primary-btn"><span>Start over</span></button>
+    </div>
+  </div>
+
+  <!-- ============ CANCELLED ============ -->
+  <div id="cancelled-screen" class="screen hidden">
+    <div class="notice">
+      <div class="notice-mark">&times;</div>
+      <h2>Session cancelled</h2>
+      <p>Your session was cancelled and nothing was stored.</p>
+      <button id="return-btn" class="primary-btn"><span>Back to the start</span></button>
+    </div>
+  </div>
+
+  <script src="supabase.f387e593.js" defer></script>
+  <script src="petalyx.5bd36dff.js" defer></script>
+</body>
+</html>
