@@ -2301,3 +2301,9 @@ html[data-theme="dark"] .ph--bathy .ph-canvas { filter: none; }
 .px-disclaimer__reg abbr { text-decoration: none; border-bottom: 1px dotted currentColor; }
 .px-disclaimer a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .px-disclaimer a:hover { color: var(--copper, currentColor); }
+
+/* ---- demo page, standalone ----
+   Every other page opens with a hero that clears the fixed header. The
+   demo page goes straight into the edition rail, so it needs that room
+   explicitly or the eyebrow sits under the nav. */
+.px-demo-section--standalone { padding-top: clamp(7rem, 12vw, 10rem); }
