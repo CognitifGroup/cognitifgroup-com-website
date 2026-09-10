@@ -5,6 +5,16 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "petalyx.cognitifgroup.com"
+        }
+      ],
+      "destination": "/pages/demo.html"
+    },
+    {
       "source": "/:page.html",
       "destination": "/pages/:page.html"
     }
@@ -15,7 +25,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://www.cognitifgroup.com https://cognitifgroup.com"
+          "value": "frame-ancestors 'self' https://www.cognitifgroup.com https://cognitifgroup.com https://petalyx.cognitifgroup.com"
         },
         {
           "key": "X-Frame-Options",
