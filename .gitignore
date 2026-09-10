@@ -3,11 +3,16 @@
 demo/petalyx/dev.html
 demo/petalyx/petalyx.dev.js
 
-# Secrets. PETALYX_WIDGET_KEY and PETALYX_BASE_URL live here locally and
-# in the Vercel project environment in deployment — never in the repo.
+# Secrets. PETALYX_WIDGET_KEY and PETALYX_BASE_URL live in .env locally
+# and in the Vercel project environment in deployment, never in the repo.
+#
+# There is deliberately no committed .env.example either. It held no
+# values, but it was one more env-shaped file to keep an eye on and it
+# earned nothing: api/_widget.js already names any missing variable, both
+# in its log line and in the 503 body it returns. That file is the
+# reference for what has to be set.
 .env
 .env.*
-!.env.example
 
 node_modules/
 .vercel/
