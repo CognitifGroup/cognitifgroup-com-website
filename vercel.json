@@ -5,16 +5,6 @@
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "petalyx.cognitifgroup.com"
-        }
-      ],
-      "destination": "/pages/demo.html"
-    },
-    {
       "source": "/:page.html",
       "destination": "/pages/:page.html"
     }
@@ -41,6 +31,19 @@
           "value": "no-store"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "petalyx.cognitifgroup.com"
+        }
+      ],
+      "destination": "/demo.html",
+      "permanent": false
     }
   ]
 }
