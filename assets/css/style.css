@@ -2683,29 +2683,57 @@ html[data-theme="dark"] .ph--bathy .ph-canvas { filter: none; }
    trigonometry as the instrument, not drawn by eye, because a crooked
    technical drawing is worse than none. */
 .px-demo-section { position: relative; overflow: hidden; }
+
+/* ---- the corner field ----
+   The page-background look: a technical drawing set mostly off the
+   bottom-left corner so only its upper-right quadrant is on the page,
+   with twelve spokes running out of the figure and far across the
+   section.
+
+   Two rules make it read as background rather than as a picture placed
+   in a corner. It is GREY -- one token, the theme's own foreground, at
+   single-digit opacity, with the copper taken out; an accent colour down
+   here competes with the text for the eye and this is not supposed to be
+   looked at. And it is MASKED, radially, from its own centre: the ink
+   fades to nothing before it reaches any edge, so the spokes end by
+   running out of darkness rather than by hitting the bottom of the
+   section. It used to stop dead at the footer, because a section with
+   `overflow: hidden` shears its contents off at the border box -- and a
+   drawing with a straight cut across it is obviously a drawing with a
+   straight cut across it. Fading is the only way out: you cannot ask the
+   section not to clip without putting the overhang into the page's
+   scroll width.
+
+   Detail is deliberately thinner than the instrument's own field -- no
+   vesica circles, no construction nodes. At this opacity fine detail
+   does not resolve, it just makes the area look faintly dirty. */
 .px-field {
   position: absolute; z-index: 0;
-  left: clamp(-9rem, -6vw, -4rem);
-  bottom: clamp(-7rem, -4vw, -3rem);
-  width: clamp(300px, 34vw, 520px); height: auto;
+  left: clamp(-28rem, -22vw, -13rem);
+  bottom: clamp(-24rem, -19vw, -11rem);
+  width: clamp(560px, 52vw, 1000px); height: auto;
   pointer-events: none;
+  opacity: 0.62;
+  -webkit-mask-image: radial-gradient(closest-side at 50% 50%,
+    #000 16%, rgba(0, 0, 0, 0.62) 44%, rgba(0, 0, 0, 0.22) 70%, transparent 88%);
+          mask-image: radial-gradient(closest-side at 50% 50%,
+    #000 16%, rgba(0, 0, 0, 0.62) 44%, rgba(0, 0, 0, 0.22) 70%, transparent 88%);
 }
 .px-demo-section > .wrap { position: relative; z-index: 1; }
 .px-field circle, .px-field path, .px-field line { fill: none; }
-.pf-ring, .pf-poly, .pf-spoke, .pf-vesica, .pf-tick {
+.pf-ring, .pf-poly, .pf-spoke, .pf-tick {
   stroke: var(--cream, #182040);
   stroke-width: 1;
 }
-.pf-ring        { opacity: 0.1; }
-.pf-ring--key   { stroke: var(--copper, #a2643c); opacity: 0.22; stroke-dasharray: 5 8; }
-.pf-ring--dot   { opacity: 0.07; stroke-dasharray: 2 9; }
-.pf-spoke       { opacity: 0.08; }
-.pf-vesica      { opacity: 0.05; }
-.pf-poly        { opacity: 0.08; stroke-linejoin: round; }
-.pf-poly--key   { stroke: var(--copper, #a2643c); opacity: 0.18; }
-.pf-poly--faint { opacity: 0.05; stroke-dasharray: 3 7; }
-.pf-tick        { opacity: 0.09; }
-.px-field circle.pf-node { fill: var(--copper, #a2643c); stroke: none; opacity: 0.2; }
+.pf-ring        { opacity: 0.075; }
+.pf-ring--key   { opacity: 0.12; stroke-dasharray: 6 9; }
+.pf-ring--dot   { opacity: 0.05; stroke-dasharray: 2 10; }
+.pf-spoke       { opacity: 0.055; }
+.pf-spoke--key  { opacity: 0.085; }
+.pf-poly        { opacity: 0.055; stroke-linejoin: round; }
+.pf-poly--key   { opacity: 0.095; }
+.pf-poly--faint { opacity: 0.04; stroke-dasharray: 3 8; }
+.pf-tick        { opacity: 0.06; }
 
 /* Only the wheels turn, and only by whole periods of their own symmetry
    -- 30 degrees for the twelve-sided ring, 60 for the hexagons -- so the
@@ -2720,7 +2748,7 @@ html[data-theme="dark"] .ph--bathy .ph-canvas { filter: none; }
   .px-field__wheel { animation: none; }
 }
 @media (max-width: 760px) {
-  .px-field { width: 280px; left: -7rem; bottom: -5rem; opacity: 0.8; }
+  .px-field { width: 620px; left: -20rem; bottom: -17rem; opacity: 0.5; }
 }
 
 /* ---- demo status note ----
