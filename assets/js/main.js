@@ -1961,7 +1961,99 @@
 
     // The same fan the widget's own start screen draws: the cast either
     // side, and the result still face down in the middle.
+    // The same outline the widget draws, so the card advertises the real
+    // thing. Kept in sync with PETAL_PATH in petalyx-source/script.js.
+    var PETAL_D = "M64 2 C 90 34, 125 64, 125 92 C 125 128, 98 166, 64 190 " +
+                  "C 30 166, 3 128, 3 92 C 3 64, 38 34, 64 2 Z";
+
+    // A petal edition does not deal cards, so it does not get a fan. It
+    // gets the instrument itself: six petals on their bearings inside the
+    // construction geometry, which is literally what the session looks
+    // like. Same path and same angles as the widget and the IPO plates.
+    function rosette(ed) {
+      var cast = (ed.cast || []).slice(0, 6);
+      var c = 110, out = "";
+
+      function poly(n, r, rot) {
+        var d = "";
+        for (var i = 0; i < n; i++) {
+          var a = (rot - 90 + i * 360 / n) * Math.PI / 180;
+          d += (i ? "L" : "M") + (c + Math.cos(a) * r).toFixed(1) + "," +
+               (c + Math.sin(a) * r).toFixed(1);
+        }
+        return d + "Z";
+      }
+
+      // construction: degree ticks on the outer ring, skipping the twelve
+      // the dodecagon already marks
+      var ticks = "";
+      for (var t = 0; t < 360; t += 15) {
+        if (t % 30 === 0) continue;
+        var ta = (t - 90) * Math.PI / 180;
+        ticks += '<line class="rz-tick" x1="' + (c + Math.cos(ta) * 98).toFixed(1) +
+                 '" y1="' + (c + Math.sin(ta) * 98).toFixed(1) +
+                 '" x2="' + (c + Math.cos(ta) * 104).toFixed(1) +
+                 '" y2="' + (c + Math.sin(ta) * 104).toFixed(1) + '"/>';
+      }
+      // spokes out to the six bearings, and the vesica circles the petal
+      // widths are struck from
+      var spokes = "", vesica = "", nodes = "";
+      for (var k = 0; k < 6; k++) {
+        var ka = (k * 60 - 90) * Math.PI / 180;
+        spokes += '<line class="rz-spoke" x1="110" y1="110" x2="' +
+                  (c + Math.cos(ka) * 84).toFixed(1) + '" y2="' +
+                  (c + Math.sin(ka) * 84).toFixed(1) + '"/>';
+        vesica += '<circle class="rz-vesica" r="42" cx="' +
+                  (c + Math.cos(ka) * 42).toFixed(1) + '" cy="' +
+                  (c + Math.sin(ka) * 42).toFixed(1) + '"/>';
+        nodes  += '<circle class="rz-node" r="1.8" cx="' +
+                  (c + Math.cos(ka) * 84).toFixed(1) + '" cy="' +
+                  (c + Math.sin(ka) * 84).toFixed(1) + '"/>';
+      }
+
+      out += '<g class="rz-frame">' +
+             '<circle class="rz-ring rz-ring--dot" cx="110" cy="110" r="104"/>' +
+             '<path class="rz-poly rz-poly--faint" d="' + poly(12, 98, 0) + '"/>' +
+             ticks +
+             '<circle class="rz-ring" cx="110" cy="110" r="84"/>' +
+             '<path class="rz-poly" d="' + poly(6, 84, 0) + '"/>' +
+             '<path class="rz-poly rz-poly--faint" d="' + poly(6, 84, 30) + '"/>' +
+             spokes + nodes +
+             '<circle class="rz-ring rz-ring--dot" cx="110" cy="110" r="56"/>' +
+             '<path class="rz-poly rz-poly--faint" d="' + poly(6, 44, 0) + '"/>' +
+             "</g>";
+      out += '<g class="rz-weave">' + vesica + "</g>";
+
+      out += '<g class="rz-bloom">';
+      for (var i = 0; i < 6; i++) {
+        var glyph = cast[i] && cast[i].svg ? cast[i].svg : "";
+        var a2 = (i * 60 - 90) * Math.PI / 180;
+        out += '<g class="rz-petal" transform="translate(110 110) rotate(' + (i * 60) +
+               ') scale(0.447) translate(-64 -190)">' +
+               '<path class="rz-petal-body" d="' + PETAL_D + '"/>' +
+               "</g>";
+        if (glyph) {
+          // A nested <svg> with no width/height defaults to 100% of the
+          // viewport, so each glyph would draw at the full 220 units and
+          // spill out of the card. Size and centre it explicitly.
+          out += '<g class="rz-glyph" transform="translate(' +
+                 (c + Math.cos(a2) * 60).toFixed(1) + ' ' +
+                 (c + Math.sin(a2) * 60).toFixed(1) + ')">' +
+                 glyph.replace('<svg ', '<svg width="17" height="17" x="-8.5" y="-8.5" ') +
+                 "</g>";
+        }
+      }
+      out += "</g>";
+
+      out += '<circle class="rz-hub" cx="110" cy="110" r="30"/>' +
+             '<text class="rz-you" x="110" y="110" text-anchor="middle" ' +
+             'dominant-baseline="central">?</text>';
+
+      return '<svg class="rz" viewBox="0 0 220 220" aria-hidden="true">' + out + "</svg>";
+    }
+
     function castFan(ed) {
+      if (ed.seat === "petal") return rosette(ed);
       var cast = ed.cast || [];
       if (cast.length < 3) return "";
       var half = Math.floor(cast.length / 2);
@@ -1983,19 +2075,50 @@
       }).join("");
     }
 
+    // First value that actually paints something, ignoring 'none'.
+    function paintable() {
+      for (var i = 0; i < arguments.length; i++) {
+        var v = arguments[i];
+        if (v && v !== "none") return v;
+      }
+      return "";
+    }
+
+    // Relative luminance of a #rgb/#rrggbb colour, sRGB weighted.
+    function isDark(hex) {
+      if (!hex || hex.charAt(0) !== "#") return false;
+      var h = hex.slice(1);
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      if (h.length !== 6) return false;
+      var n = parseInt(h, 16);
+      if (isNaN(n)) return false;
+      var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 140;
+    }
+
     function poster(ed) {
       var t = ed.theme || {};
       var li = document.createElement("li");
       // An edition without a gateway version has no real session behind
       // it. It still shows — the range is the point — but it cannot be
       // opened onto placeholder words.
-      li.className = "px-card" + (ed.launchable ? "" : " is-soon");
+      // A poster can be light or dark, and almost everything stacked on
+      // it — the wash, the fan seats, the hairline — has to flip with it.
+      // posterInk is the signal already in the data: a dark ink means a
+      // light card. Measured off the ink rather than the background,
+      // because the background may be a gradient string.
+      var lightCard = isDark(t.posterInk || t.ink);
+      li.className = "px-card" + (ed.launchable ? "" : " is-soon") +
+                     (lightCard ? " px-card--light" : "");
       li.dataset.edition = ed.id;
       li.style.cssText = [
         "--tint:" + t.accent,
         "--tint-soft:" + (t.accentSoft || t.accent),
         "--surface:" + t.bg,
-        "--surface-image:" + (t.poster || t.bgImage || t.bg),
+        // 'none' is a real CSS keyword meaning "draw nothing". Taking it
+        // as a poster leaves the card empty, which is what made the
+        // flat-themed editions look like unfinished placeholders.
+        "--surface-image:" + (paintable(t.poster, t.bgImage) || t.bg),
         "--poster-ink:" + (t.posterInk || t.ink),
         "--card-font:" + (ed.fonts && ed.fonts.display ? ed.fonts.display : "inherit")
       ].join(";");
@@ -2008,11 +2131,18 @@
         ? '<button class="px-card__face" type="button" data-px-open="' + ed.id + '">'
         : '<div class="px-card__face" aria-disabled="true">';
       var close = ed.launchable ? "</button>" : "</div>";
+      // "Run this edition" describes the machinery. The visitor wants to
+      // know what they get, so the cue answers the tagline instead.
       var cue = ed.launchable
-        ? '<span class="px-card__cue">Run this edition &rarr;</span>'
-        : '<span class="px-card__cue px-card__cue--soon">More editions coming</span>';
+        ? '<span class="px-card__cue">' + (ed.cue || 'Try it now') + ' &rarr;</span>'
+        : '<span class="px-card__cue px-card__cue--soon">Coming soon</span>';
 
       li.innerHTML =
+        // Outside the face on purpose: the face clips its overflow, so
+        // anything meant to glow PAST the card edge cannot live inside
+        // it. The rail's edge mask softens this where it meets the
+        // scroll frame instead of shearing it off.
+        '<span class="px-card__aura" aria-hidden="true"></span>' +
         open +
           // Optional per-edition photography (see IMAGES.md in
           // petalyx-source). Without it the poster stands on the
@@ -2020,10 +2150,19 @@
           (ed.photo ? '<img class="px-card__photo" src="' + BASE + ed.photo + '" alt="" loading="lazy" />' : "") +
           '<span class="px-card__cast" aria-hidden="true">' + castFan(ed) + "</span>" +
           '<span class="px-card__wash" aria-hidden="true"></span>' +
+          '<span class="px-card__beam" aria-hidden="true">' +
+            '<span class="beam-glow"></span>' +
+            '<span class="beam-ring"><span class="beam-run"></span></span>' +
+          '</span>' +
+          // Runs the edition's own accent once around the border when
+          // the card first comes into view, and again on hover.
+
           '<span class="px-card__head"><span class="px-card__name">' + ed.name + "</span>" +
             '<span class="px-card__mark" aria-hidden="true">' + mark + "</span></span>" +
           '<span class="px-card__body">' +
-            '<span class="px-card__kicker">' + ed.sub + "</span>" +
+            // No kicker line. "Football - 50 rounds" described the
+            // mechanics; the tagline is what a visitor is actually
+            // choosing between, and it reads better alone.
             '<span class="px-card__q">' + ed.tagline + "</span>" +
             cue +
           "</span>" +
@@ -2038,14 +2177,195 @@
       return li;
     }
 
+    // Placeholders for the editions still in build. Deliberately inert:
+    // no poster, no hover, no beam, nothing to click. They say the range
+    // is wider than two without pretending any of them are ready.
+    var SOON = [
+      { kicker: "Parenting \u00b7 Trust",  q: "What kind of parent are you, really?" },
+      { kicker: "Family \u00b7 Belonging", q: "Who are you in your family?" },
+      { kicker: "Music \u00b7 Identity",   q: "What does your anthem say about you?" }
+    ];
+
+    // The wireframe on an unfinished card. Same construction as the
+    // rosette the house edition draws -- rings, the six bearings, the
+    // hexagon whose vertices are the petal centres, the vesica circles --
+    // but line only, with no petals struck on it yet. That is exactly
+    // what an edition still in build IS: the geometry exists, the skin
+    // does not. Three circles said nothing.
+    function blueprintMark(seed) {
+      var c = 110, out = "";
+      function poly(n, r, rot) {
+        var d = "";
+        for (var i = 0; i < n; i++) {
+          var a = (rot - 90 + i * 360 / n) * Math.PI / 180;
+          d += (i ? "L" : "M") + (c + Math.cos(a) * r).toFixed(1) + "," +
+               (c + Math.sin(a) * r).toFixed(1);
+        }
+        return d + "Z";
+      }
+      var X = function (deg, r) { return (c + Math.cos((deg - 90) * Math.PI / 180) * r).toFixed(1); };
+      var Y = function (deg, r) { return (c + Math.sin((deg - 90) * Math.PI / 180) * r).toFixed(1); };
+
+      // --- the still frame: everything that states where a petal would go
+      var still = "";
+      [34, 52, 72, 100, 0].forEach(function (r, i) {
+        if (!r) return;
+        still += '<circle class="gw-ring' + (r === 100 ? " gw-ring--key" : "") +
+                 '" style="--i:' + i + '" cx="110" cy="110" r="' + r + '"/>';
+      });
+      for (var d = 0; d < 360; d += 30) {
+        var onPetal = d % 60 === 0;
+        var i0 = onPetal ? 34 : 52, i1 = onPetal ? 104 : 100;
+        still += '<line class="gw-spoke' + (onPetal ? " gw-spoke--key" : "") + '" style="--i:' + (d / 30) +
+                 '" x1="' + X(d, i0) + '" y1="' + Y(d, i0) +
+                 '" x2="' + X(d, i1) + '" y2="' + Y(d, i1) + '"/>';
+      }
+      for (var v = 0; v < 360; v += 60) {
+        still += '<circle class="gw-vesica" style="--i:' + (v / 60) +
+                 '" cx="' + X(v, 100) + '" cy="' + Y(v, 100) + '" r="100"/>';
+      }
+      still += '<circle class="gw-vesica" style="--i:6" cx="110" cy="110" r="100"/>';
+      still += '<path class="gw-poly gw-poly--key" d="' + poly(6, 100, 0) + '"/>';
+      still += '<path class="gw-poly gw-poly--faint" d="' + poly(6, 52, 0) + '"/>';
+      // the six petal centres, marked but not drawn on
+      for (var n = 0; n < 360; n += 60) {
+        still += '<circle class="gw-node" r="2.4" cx="' + X(n, 100) + '" cy="' + Y(n, 100) + '"/>';
+      }
+
+      // --- the wheels. Each steps by a whole period of its own symmetry,
+      //     so a turning card is never a card that has gone crooked.
+      var tick = '<path class="gw-poly" d="' + poly(12, 84, 0) + '"/>';
+      for (var t = 0; t < 360; t += 15) {
+        if (t % 30 === 0) continue;
+        tick += '<line class="gw-tick" x1="' + X(t, 72) + '" y1="' + Y(t, 72) +
+                '" x2="' + X(t, 78) + '" y2="' + Y(t, 78) + '"/>';
+      }
+      var hex = '<path class="gw-poly" d="' + poly(6, 100, 30) + '"/>' +
+                '<path class="gw-poly gw-poly--faint" d="' + poly(6, 72, 30) + '"/>';
+
+      // A per-card offset so the three are not a row of identical clocks.
+      var off = (seed % 3) * 10;
+      return '<svg class="gw" viewBox="0 0 220 220" aria-hidden="true" style="--off:' + off + 's">' +
+             '<g class="gw-still">' + still + "</g>" +
+             '<g class="gw-wheel gw-wheel--tick">' + tick + "</g>" +
+             '<g class="gw-wheel gw-wheel--hex">' + hex + "</g>" +
+             "</svg>";
+    }
+
+    function ghost(g, gi) {
+      var li = document.createElement("li");
+      li.className = "px-card px-card--ghost";
+      li.innerHTML =
+        '<div class="px-card__face" aria-disabled="true">' +
+          '<span class="px-card__ghostwork" aria-hidden="true">' + blueprintMark(gi || 0) + "</span>" +
+          '<span class="px-card__body">' +
+            '<span class="px-card__kicker">' + g.kicker + "</span>" +
+            '<span class="px-card__q">' + g.q + "</span>" +
+            '<span class="px-card__cue px-card__cue--soon">Coming soon</span>' +
+          "</span>" +
+        "</div>";
+      return li;
+    }
+
+    // The figure turns while hovered. Dropping the animation on mouseleave
+    // would snap it back to zero, so instead read the angle it actually
+    // reached, pin it there, and carry it home with a transition.
+    //
+    // It settles to a WHOLE turn, not the nearest sixth. The petals are
+    // six-fold and land identically either way, but the GLYPHS are not:
+    // stopping at 60 degrees left them a sixth of a turn out of place, so
+    // clearing the pinned transform at the end jumped them. Travelling to
+    // true zero means the end state and the cleared state are the same
+    // thing and nothing moves when the pin is released.
+    function settleOnLeave(card) {
+      var groups = card.querySelectorAll(".rz-bloom, .rz-frame");
+      if (!groups.length) return;
+      var timer = null;
+      // seconds per full turn, signed, matching the two @keyframes
+      function spin(el) { return el.classList.contains("rz-frame") ? -24 : 15; }
+
+      function angleOf(el) {
+        var m = getComputedStyle(el).transform;
+        if (!m || m === "none") return 0;
+        var n = m.match(/matrix\(([^)]+)\)/);
+        if (!n) return 0;
+        var p = n[1].split(",").map(parseFloat);
+        return Math.atan2(p[1], p[0]) * 180 / Math.PI;
+      }
+
+      card.addEventListener("mouseenter", function () {
+        if (timer) { clearTimeout(timer); timer = null; }
+        // An animation with fill:both outranks a transition on the same
+        // property, so the intro would swallow the hover glow for its
+        // whole run. Hovering ends the intro early instead.
+        card.classList.remove("is-intro");
+        card.classList.remove("is-settling");
+        // Resume from wherever it is rather than restarting at zero: a
+        // negative animation-delay offsets the keyframes by that much of
+        // a turn, so re-entering mid-settle does not jump either.
+        groups.forEach(function (g) {
+          var a = angleOf(g), per = spin(g);
+          var frac = ((a / 360) / (per < 0 ? -1 : 1)) % 1;
+          if (frac < 0) frac += 1;
+          g.style.transform = "";
+          g.style.animationDelay = (-frac * Math.abs(per)).toFixed(2) + "s";
+        });
+        card.classList.add("is-turning");
+      });
+
+      card.addEventListener("mouseleave", function () {
+        var at = [];
+        groups.forEach(function (g) { at.push(angleOf(g)); });
+        card.classList.remove("is-turning");
+        // pin at the angle reached, with the animation now gone
+        groups.forEach(function (g, i) { g.style.transform = "rotate(" + at[i].toFixed(2) + "deg)"; });
+        // force layout so the pinned value is the transition's start
+        void card.offsetWidth;
+        card.classList.add("is-settling");
+        // Longest travel is 180 degrees; scale the time to the distance so
+        // a short settle is not sluggish and a long one is not a lurch.
+        var slowest = 0;
+        groups.forEach(function (g, i) {
+          var far = Math.abs(at[i]) / 180;
+          var secs = 0.55 + far * 0.95;
+          if (secs > slowest) slowest = secs;
+          g.style.setProperty("--settle", secs.toFixed(2) + "s");
+          g.style.transform = "rotate(0deg)";
+        });
+        timer = setTimeout(function () {
+          card.classList.remove("is-settling");
+          // Safe to clear now: the pinned value IS zero, so releasing it
+          // changes nothing on screen.
+          groups.forEach(function (g) {
+            g.style.transform = "";
+            g.style.animationDelay = "";
+          });
+          timer = null;
+        }, slowest * 1000 + 120);
+      });
+    }
+
     function build(list) {
       editions = list;
       list.forEach(function (ed) { rail.appendChild(poster(ed)); });
+      SOON.forEach(function (g, gi) { rail.appendChild(ghost(g, gi)); });
+
+      // The intro glow plays once per card on first load only, then the
+      // class comes off so the hover transition owns opacity from then
+      // on. build() runs once, so returning from an edition cannot
+      // replay it -- what used to replay it was :focus-within lighting
+      // the beam when focus was restored to the card's button.
+      rail.querySelectorAll(".px-card").forEach(function (c) {
+        if (c.classList.contains("px-card--ghost")) return;
+        c.classList.add("is-intro");
+        setTimeout(function () { c.classList.remove("is-intro"); }, 11600);
+        settleOnLeave(c);
+      });
       pxRange.dataset.state = "idle";
       // No running count of what is unfinished. The posters already say
       // which ones can be opened, and an edition that is not ready yet
       // is not something a visitor needs a tally of.
-      note.textContent = "Choose an edition to run it — one instrument, every skin.";
+      note.textContent = "Choose an edition to run it. One instrument, every skin.";
       syncArrows();
 
       if ("IntersectionObserver" in window) {

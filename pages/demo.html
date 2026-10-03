@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Try Petalyx™ — Cognitif Group</title>
-<meta name="description" content="Run a real Petalyx™ session. Nine editions, one instrument — a fifty-round word-association capture with a full reveal at the end.">
+<meta name="description" content="Run a real Petalyx™ session — a fifty-round word-association capture with a full reveal at the end.">
 <meta property="og:title" content="Try Petalyx™">
 <meta property="og:description" content="Run a real Petalyx™ session in your browser. Fifty rounds, then the reveal.">
 <meta property="og:type" content="website">
@@ -71,13 +71,67 @@
 
 <main id="main">
   <section class="section px-demo-section px-demo-section--standalone" id="demo" aria-labelledby="px-demo-title">
+    <!-- Construction geometry in the bottom-left corner: the same figure
+         the instrument is laid out from, at a whisper, so the page sits
+         on the thing it is selling rather than on blank paper. Decorative
+         only, hence aria-hidden. -->
+    <svg class="px-field" viewBox="0 0 360 360" aria-hidden="true" focusable="false">
+      <g class="px-field__still">
+        <circle class="pf-ring" cx="180" cy="180" r="61"/>
+        <circle class="pf-ring" cx="180" cy="180" r="94"/>
+        <circle class="pf-ring pf-ring--key" cx="180" cy="180" r="130"/>
+        <circle class="pf-ring" cx="180" cy="180" r="166"/>
+        <circle class="pf-ring pf-ring--dot" cx="180" cy="180" r="112"/>
+        <circle class="pf-ring pf-ring--dot" cx="180" cy="180" r="148"/>
+        <path class="pf-poly pf-poly--key" d="M180.0,50.0L292.6,115.0L292.6,245.0L180.0,310.0L67.4,245.0L67.4,115.0Z"/>
+        <path class="pf-poly pf-poly--faint" d="M180.0,119.0L232.8,149.5L232.8,210.5L180.0,241.0L127.2,210.5L127.2,149.5Z"/>
+        <circle class="pf-vesica" cx="180.0" cy="50.0" r="130"/>
+        <circle class="pf-vesica" cx="292.6" cy="115.0" r="130"/>
+        <circle class="pf-vesica" cx="292.6" cy="245.0" r="130"/>
+        <circle class="pf-vesica" cx="180.0" cy="310.0" r="130"/>
+        <circle class="pf-vesica" cx="67.4" cy="245.0" r="130"/>
+        <circle class="pf-vesica" cx="67.4" cy="115.0" r="130"/>
+        <circle class="pf-vesica" cx="180" cy="180" r="130"/>
+        <line class="pf-spoke" x1="180.0" y1="119.0" x2="180.0" y2="14.0"/>
+        <line class="pf-spoke" x1="232.8" y1="149.5" x2="323.8" y2="97.0"/>
+        <line class="pf-spoke" x1="232.8" y1="210.5" x2="323.8" y2="263.0"/>
+        <line class="pf-spoke" x1="180.0" y1="241.0" x2="180.0" y2="346.0"/>
+        <line class="pf-spoke" x1="127.2" y1="210.5" x2="36.2" y2="263.0"/>
+        <line class="pf-spoke" x1="127.2" y1="149.5" x2="36.2" y2="97.0"/>
+        <circle class="pf-node" cx="180.0" cy="50.0" r="3"/>
+        <circle class="pf-node" cx="292.6" cy="115.0" r="3"/>
+        <circle class="pf-node" cx="292.6" cy="245.0" r="3"/>
+        <circle class="pf-node" cx="180.0" cy="310.0" r="3"/>
+        <circle class="pf-node" cx="67.4" cy="245.0" r="3"/>
+        <circle class="pf-node" cx="67.4" cy="115.0" r="3"/>
+      </g>
+      <g class="px-field__wheel">
+        <path class="pf-poly" d="M180.0,14.0L263.0,36.2L323.8,97.0L346.0,180.0L323.8,263.0L263.0,323.8L180.0,346.0L97.0,323.8L36.2,263.0L14.0,180.0L36.2,97.0L97.0,36.2Z"/>
+        <line class="pf-tick" x1="218.3" y1="37.0" x2="220.4" y2="29.3"/>
+        <line class="pf-tick" x1="284.7" y1="75.3" x2="290.3" y2="69.7"/>
+        <line class="pf-tick" x1="323.0" y1="141.7" x2="330.7" y2="139.6"/>
+        <line class="pf-tick" x1="323.0" y1="218.3" x2="330.7" y2="220.4"/>
+        <line class="pf-tick" x1="284.7" y1="284.7" x2="290.3" y2="290.3"/>
+        <line class="pf-tick" x1="218.3" y1="323.0" x2="220.4" y2="330.7"/>
+        <line class="pf-tick" x1="141.7" y1="323.0" x2="139.6" y2="330.7"/>
+        <line class="pf-tick" x1="75.3" y1="284.7" x2="69.7" y2="290.3"/>
+        <line class="pf-tick" x1="37.0" y1="218.3" x2="29.3" y2="220.4"/>
+        <line class="pf-tick" x1="37.0" y1="141.7" x2="29.3" y2="139.6"/>
+        <line class="pf-tick" x1="75.3" y1="75.3" x2="69.7" y2="69.7"/>
+        <line class="pf-tick" x1="141.7" y1="37.0" x2="139.6" y2="29.3"/>
+      </g>
+      <g class="px-field__wheel px-field__wheel--back">
+        <path class="pf-poly pf-poly--faint" d="M227.0,98.6L274.0,180.0L227.0,261.4L133.0,261.4L86.0,180.0L133.0,98.6Z"/>
+        <path class="pf-poly pf-poly--faint" d="M245.0,67.4L310.0,180.0L245.0,292.6L115.0,292.6L50.0,180.0L115.0,67.4Z"/>
+      </g>
+    </svg>
     <div class="wrap">
       <div class="px-demo-head">
         <div>
           <p class="eyebrow rv">Demo version</p>
           <h2 id="px-demo-title" class="display-lg rv d-08">Experience Petalyx™&nbsp;<em>directly.</em></h2>
         </div>
-        <p class="rv d-14">Nine editions, one instrument. Arsenal is live &mdash; the real fifty-round capture, with a full reveal at the end. Responses are anonymised and used for research; the consent screen inside sets out exactly what is collected before anything begins.</p>
+        <p class="rv d-14">One instrument, every skin. Two editions are open here: the instrument itself, unskinned, and Arsenal, the real fifty-round capture with a full reveal at the end. Responses are anonymised and used for research; the consent screen inside sets out exactly what is collected before anything begins.</p>
       </div>
 
       <!-- The range. Built at runtime from demo/petalyx/editions.json,
@@ -155,11 +209,37 @@
                  registration ZAnnnnnn." Nothing else here needs to change.
 
                  The trademark and patent-pending wording below is separate
-                 and already true; it is not a substitute for the above. -->
+                 and already true; it is not a substitute for the above.
+
+                 CORRECTED, 3 October 2026. This previously read "the design
+                 is registered with the UK Intellectual Property Office".
+                 It is not registered. The representations exist and the
+                 application is the open task with the IPO, but until a
+                 registration number is issued the design is not registered,
+                 and saying otherwise on a public page is an offence under
+                 section 35 of the Registered Designs Act 1949 — falsely
+                 representing a design as registered.
+
+                 "Patent-pending" is left exactly as it was: that claim is
+                 about the capture process, is Andrew's, and is separate.
+
+                 UPDATED, 3 October 2026, on Andrew's confirmation: asked
+                 directly for a registration number he replied "No, only the
+                 number noted in the correspondence with the IP Commissioner.
+                 This will change when granted." That confirms an application
+                 exists and that it has NOT been granted, so the "applied
+                 for" wording below is now accurate and is restored.
+
+                 On grant, and only once the registration number is in hand,
+                 this becomes: "...and the design is registered with the UK
+                 Intellectual Property Office, design number nnnnnnn."
+                 Do not use that wording before that number exists: until a
+                 registration is actually granted it is an offence under
+                 section 35, regardless of how certain the grant looks. -->
             Petalyx&trade; and Semantic Bathymetry&trade; are trademarks of
             Cognitif Group Limited, registered in England and Wales.
-            The capture process is patent-pending and the design is registered
-            with the UK Intellectual Property Office.
+            The capture process is patent-pending, and a design registration
+            has been applied for at the UK Intellectual Property Office.
             <a href="privacy.html">Read the privacy notice</a>.
           </p>
         </aside>

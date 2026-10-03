@@ -8,7 +8,7 @@
   <meta name="referrer" content="same-origin" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="petalyx.940195f0.css" />
+  <link rel="stylesheet" href="petalyx.16c1082b.css" />
 </head>
 <body>
 
@@ -40,8 +40,18 @@
            card where your result will be. Built by JS from the roster. -->
       <div class="hero-preview" id="hero-preview" hidden aria-hidden="true"></div>
 
+      <!-- Populated from EDITION.intro when an edition supplies one.
+           The house edition uses it to name the measured axes and set out
+           what the fifty trials involve; partner editions leave it
+           empty and keep the roster preview above instead. -->
+      <div class="hero-axes" id="hero-axes" hidden aria-hidden="true"></div>
+
       <button id="start-btn" class="primary-btn"><span>Begin</span></button>
       <p class="hero-meta" id="start-meta">Around a minute &middot; nothing to sign up for</p>
+
+      <div class="hero-steps" id="hero-steps" hidden></div>
+
+      <p class="hero-legal" id="hero-legal" hidden></p>
     </div>
   </div>
 
@@ -60,21 +70,40 @@
         <p>By ticking the box below you consent to taking part. You may stop at any time using the Cancel button, which ends the session immediately.</p>
       </div>
 
-      <div class="form-group">
-        <label>Gender</label>
-        <div class="option-group">
-          <button class="option-btn" data-field="gender" data-value="M">Male</button>
-          <button class="option-btn" data-field="gender" data-value="F">Female</button>
-          <button class="option-btn" data-field="gender" data-value="O">Other</button>
-        </div>
-      </div>
+      <!-- Native <select>, so the platform draws its own picker: the
+           iOS wheel, the Android sheet, the macOS dropdown. A row of
+           custom buttons can never match that, and this is the one
+           control a participant must not have to think about.
 
-      <div class="form-group">
-        <label>Age</label>
-        <div class="option-group">
-          <button class="option-btn" data-field="age_band" data-value="18-34">Under 35</button>
-          <button class="option-btn" data-field="age_band" data-value="35-54">35 to 54</button>
-          <button class="option-btn" data-field="age_band" data-value="55+">55 or over</button>
+           The VALUES are fixed by the protocol (CGL-MESSAGING-PROTOCOL-001
+           §4.1): gender is exactly M|F|O and age_band is exactly
+           18-34|35-54|55+. Anything else is rejected upstream with a 422,
+           so the labels may be reworded but these values may not. -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="age-select">Age</label>
+          <div class="select-wrap">
+            <select id="age-select" data-field="age_band">
+              <option value="" selected>Select Age</option>
+              <option value="18-34">Under 35</option>
+              <option value="35-54">35 to 54</option>
+              <option value="55+">55 or over</option>
+            </select>
+            <svg class="select-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gender-select">Gender</label>
+          <div class="select-wrap">
+            <select id="gender-select" data-field="gender">
+              <option value="" selected>Select Gender</option>
+              <option value="F">Female</option>
+              <option value="M">Male</option>
+              <option value="O">Other</option>
+            </select>
+            <svg class="select-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
         </div>
       </div>
 
@@ -90,7 +119,63 @@
       <button id="begin-btn" class="primary-btn" disabled><span>Begin</span></button>
       <p class="consent-note" id="consent-note">Pick both, tick the box, and you are away.</p>
 
+      <!-- The consent text above is the short form. This is the full
+           statement, in the participant's reach at the moment they are
+           being asked to consent rather than buried on another site. -->
+      <button type="button" id="privacy-btn" class="link-btn">Read our full Privacy Statement</button>
 
+
+    </div>
+  </div>
+
+  <!-- ============ PRIVACY STATEMENT ============
+       Reachable from the consent screen. Issued text, reproduced as
+       supplied — the wording is Cognitif Group's and is not the
+       widget's to paraphrase. Only the [DPO contact details] placeholder
+       is marked, because shipping a square-bracket placeholder as if it
+       were an address would be worse than showing it is outstanding.
+       ============ -->
+  <div id="privacy-overlay" class="pv-overlay" hidden>
+    <div class="pv-scrim" data-pv="close" aria-hidden="true"></div>
+    <div class="pv-panel" role="dialog" aria-modal="true" aria-labelledby="pv-title">
+      <div class="pv-bar">
+        <h2 id="pv-title">Petalyx&trade; &mdash; Your Privacy</h2>
+        <button type="button" class="pv-close" data-pv="close" aria-label="Close">&times;</button>
+      </div>
+      <div class="pv-body" tabindex="0">
+        <h3>Who we are</h3>
+        <p>Petalyx&trade; is the data capture interface of Cognitif Group Limited. We run a word-association exercise to understand how people feel about abstract ideas &mdash; things like trust, authority, or motivation. We do this by measuring which words you associate with other words, and how quickly you respond. Petalyx&trade; is a proprietary data capture architecture owned and operated by Cognitif Group Limited as part of the Cognitif.ai software suite.</p>
+
+        <h3>What we collect</h3>
+        <ul>
+          <li>Which word you selected from the options shown.</li>
+          <li>How long it took you to respond (in milliseconds, relative to when the word appeared). This timing is adjusted on your device before anything leaves it.</li>
+          <li>Optionally, your age group and gender &mdash; but only if you choose to provide them.</li>
+        </ul>
+
+        <h3>What we do not collect</h3>
+        <p>We do not collect &mdash; and cannot collect &mdash; your name, email address, IP address, location, device type, or any other information that could identify you. No login is required. No cookies are used.</p>
+
+        <h3>How your data is used</h3>
+        <p>Your responses are immediately converted into anonymous numerical values before leaving your device. The words themselves are never stored or transmitted. We use the anonymised data to build population-level maps of how groups of people relate to abstract concepts. We do not build individual profiles and we do not make decisions about you based on your responses.</p>
+
+        <h3>Who sees your data</h3>
+        <p>Your anonymised responses are processed within the Cognitif.ai platform operated by Cognitif Group Limited. The Semba.ai dataset &mdash; the anonymised population-level corpus &mdash; is owned and governed by SEMBA AI, a Company Limited by Guarantee with an independent governance board. Only aggregated, population-level insights are shared with our business partners (licensees) via the Insightvault.ai visualisation portal. Your individual session data is never sold, shared, or disclosed.</p>
+
+        <h3>Your choices</h3>
+        <p>You can stop at any time. Participation is entirely voluntary.</p>
+
+        <h3>Your rights</h3>
+        <p>Because we do not hold any information that identifies you, the standard data access and deletion rights under UK data protection law cannot be exercised against your session &mdash; there is simply nothing linked to you to find, correct, or delete. If you have questions about how we handle data, you can contact our Data Protection Officer at: <span class="pv-todo">[DPO contact details]</span>.</p>
+
+        <h3>Oversight</h3>
+        <p>Our anonymisation process is independently audited annually. The Semba.ai dataset is owned and governed by SEMBA AI, a Company Limited by Guarantee constituted with a majority of independent Non-Executive Directors.</p>
+
+        <p class="pv-issued">Issued by: Cognitif Group Limited &middot; Cognitif.ai &middot; Version 1.2 &middot; April 2026</p>
+      </div>
+      <div class="pv-foot">
+        <button type="button" class="primary-btn" data-pv="close"><span>Close</span></button>
+      </div>
     </div>
   </div>
 
@@ -180,6 +265,6 @@
   </div>
 
   <script src="supabase.f387e593.js" defer></script>
-  <script src="petalyx.d06d4f94.js" defer></script>
+  <script src="petalyx.a636b318.js" defer></script>
 </body>
 </html>
