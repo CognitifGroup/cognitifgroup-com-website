@@ -1958,7 +1958,6 @@ html.motion-ok .card--dev:hover {
   .gw-wheel { animation: none; }
 }
 .px-card--ghost .px-card__blurb { opacity: 0.7; }
-.px-card.is-soon .px-card__face { background-color: color-mix(in srgb, var(--cream) 6%, transparent); }
 
 .px-card__head {
   position: absolute; z-index: 2; inset: 0 0 auto;
@@ -2010,13 +2009,25 @@ html.motion-ok .card--dev:hover {
    the argument — but visibly not a thing you can press. */
 .px-card.is-soon .px-card__face { cursor: default; }
 .px-card.is-soon .px-card__face:hover { transform: none; box-shadow: none; }
-.px-card.is-soon .px-card__wash { background:
-  linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.3) 58%); }
-.px-card.is-soon .px-card__cast,
-.px-card.is-soon .px-card__mark { filter: grayscale(1); opacity: 0.3; }
-.px-card.is-soon .px-card__q { opacity: 0.6; }
+.px-card.is-soon .px-card__q { opacity: 0.85; }
+/* A restrained house-colour ribbon marks editions still in preparation. */
+.px-card__tape {
+  position: absolute; z-index: 4;
+  left: -20%; right: -20%; top: 44%;
+  display: flex; justify-content: center; gap: 1.6em;
+  padding: 0.85em 0;
+  transform: rotate(-10deg);
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  border-block: 1px solid color-mix(in srgb, var(--copper) 45%, transparent);
+  color: var(--cream-dim);
+  font: 500 0.68rem/1 var(--sans);
+  letter-spacing: 0.2em; text-transform: uppercase; white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(13,20,40,0.12);
+  pointer-events: none;
+}
+.px-card__tape span::before { content: "\2022"; margin-right: 1.6em; color: var(--copper); }
 .px-card__cue--soon {
-  color: rgba(247, 242, 229, 0.5);
+  color: var(--tint-soft, var(--tint));
   opacity: 1;
 }
 
@@ -2625,7 +2636,8 @@ html[data-theme="dark"] .viz-panel canvas,
 html[data-theme="dark"] .band-lines {
   filter: invert(1) hue-rotate(180deg) saturate(0.68) brightness(1.04);
 }
-html[data-theme="dark"] .ph--bathy .ph-canvas { filter: none; }
+html[data-theme="dark"] .ph--bathy .ph-canvas,
+html[data-theme="dark"] .ph--minute .ph-canvas { filter: none; }
 
 @media (max-width: 760px) {
   html[data-theme="dark"] .ph-scrim,
@@ -2644,10 +2656,10 @@ html[data-theme="dark"] .ph--bathy .ph-canvas { filter: none; }
 /* ---- demo disclaimer ----
    Legally required copy, so it is set to be read rather than skipped:
    full contrast on the lead line, a rule above it so it reads as a
-   distinct notice rather than more marketing, and a measure that does
-   not run to 140 characters. Quiet, but never grey-on-grey. */
+   distinct notice rather than more marketing. It spans the full
+   content width. Quiet, but never grey-on-grey. */
 .px-disclaimer {
-  max-width: 62ch;
+  max-width: none;
   margin: 2.2rem 0 0;
   padding-top: 1.3rem;
   border-top: 1px solid var(--rule, rgba(24, 32, 64, 0.16));

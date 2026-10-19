@@ -1379,84 +1379,106 @@
     };
   }
 
-  /* Just a Minute — a numberless chronograph with a discrete
-     one-second hand and a ring of reaction-time readings. */
+  /* Just a Minute — the case draws in, the right pusher starts the
+     instrument, and the completed dial begins its one-second tick. */
   function makeMinute() {
     return function (ctx, W, H, te) {
-      var cx = W > 860 ? W * 0.68 : W * 0.5;
-      var cy = H * 0.52;
-      var R = Math.min(W * 0.27, H * 0.35);
-      var intro = smooth(clamp(te / 1.1, 0, 1));
-      var sy = window.scrollY || 0;
-
-      ctx.save();
-      ctx.translate(cx, cy);
-
-      ctx.strokeStyle = "rgba(24,32,64,0.28)";
-      ctx.lineWidth = 1.1;
-      ctx.beginPath();
-      ctx.arc(0, 0, R, -1.5708, -1.5708 + intro * 6.2832);
-      ctx.stroke();
-
-      var tickTime = Math.max(0, te - 1.05);
-      var tickIndex = Math.floor(tickTime) % 60;
-      var tickPhase = tickTime - Math.floor(tickTime);
-      var tickAdvance = tickPhase < 0.12
-        ? 1 - Math.pow(1 - tickPhase / 0.12, 3)
-        : 1;
-      var prog = motionOK ? (tickIndex + tickAdvance) / 60 : 0.42;
-      var sweepA = -1.5708 + prog * 6.2832;
-
-      ctx.save();
-      ctx.rotate(sy * 0.00022);
-      for (var t = 0; t < 60; t++) {
-        var a = -1.5708 + t / 60 * 6.2832;
-        var tf = smooth(clamp((intro * 60 - t * 0.6) / 8, 0, 1));
-        var behind = (sweepA - a + 12.566) % 6.2832;
-        var glow = te > 1.1 ? Math.exp(-behind * 2.2) : 0;
-        var maj = t % 5 === 0;
-        var al = (maj ? 0.32 : 0.15) * tf + glow * 0.5;
-        ctx.strokeStyle = behind < 0.5 && te > 1.1
-          ? "rgba(166,98,62," + al.toFixed(3) + ")"
-          : "rgba(24,32,64," + al.toFixed(3) + ")";
-        ctx.lineWidth = maj ? 1.4 : 1;
-        var l1 = R - (maj ? 16 : 9);
+      var cx = W > 860 ? W * 0.70 : W * 0.5;
+      var cy = H * 0.55;
+      var R = Math.min(W * 0.24, H * 0.27);
+      var dark = doc.getAttribute("data-theme") === "dark";
+      var ink = dark ? "247,242,229" : "24,32,64";
+      var copper = dark ? "198,123,82" : "160,95,60";
+      var paper = dark ? "13,20,40" : "247,242,229";
+      function reveal(start, duration) {
+        return motionOK ? smooth(clamp((te - start) / duration, 0, 1)) : 1;
+      }
+      var intro = reveal(0, 0.65);
+      var caseIn = reveal(0.12, 1.0);
+      var rimIn = reveal(0.30, 1.0);
+      var controlsIn = reveal(0.20, 0.55);
+      var handIn = reveal(0.85, 0.70);
+      var press = motionOK
+        ? reveal(0.90, 0.22) * (1 - reveal(1.25, 0.30))
+        : 0;
+      function tone(rgb, alpha) { return "rgba(" + rgb + "," + alpha + ")"; }
+      function button(x, y, w, h, r) {
         ctx.beginPath();
-        ctx.moveTo(Math.cos(a) * R, Math.sin(a) * R);
-        ctx.lineTo(Math.cos(a) * l1, Math.sin(a) * l1);
-        ctx.stroke();
+        ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      ctx.save();
+      ctx.translate(cx, cy + (1 - intro) * 12);
+      ctx.globalAlpha = intro;
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      // Restore the crown, collars and knurling; only the right pusher moves.
+      ctx.save(); ctx.globalAlpha *= controlsIn;
+      [-0.72, 0.72].forEach(function (angle) {
+        ctx.save(); ctx.rotate(angle);
+        if (angle > 0) ctx.translate(0, R * 0.085 * press);
+        ctx.fillStyle = tone(paper, 0.96);
+        ctx.strokeStyle = tone(ink, 0.42); ctx.lineWidth = 1.5;
+        button(-R * 0.055, -R * 1.12, R * 0.11, R * 0.18, R * 0.025);
+        ctx.fillStyle = tone(copper, 0.09);
+        ctx.strokeStyle = tone(copper, 0.65);
+        button(-R * 0.14, -R * 1.27, R * 0.28, R * 0.17, R * 0.04);
+        ctx.restore();
+      });
+      ctx.fillStyle = tone(paper, 0.96);
+      ctx.strokeStyle = tone(ink, 0.44); ctx.lineWidth = 1.5;
+      button(-R * 0.075, -R * 1.23, R * 0.15, R * 0.26, R * 0.02);
+      ctx.fillStyle = tone(copper, 0.10);
+      ctx.strokeStyle = tone(copper, 0.7);
+      button(-R * 0.18, -R * 1.43, R * 0.36, R * 0.22, R * 0.055);
+      ctx.strokeStyle = tone(copper, 0.38); ctx.lineWidth = 1;
+      for (var k = -2; k <= 2; k++) {
+        ctx.beginPath(); ctx.moveTo(k * R * 0.055, -R * 1.38);
+        ctx.lineTo(k * R * 0.055, -R * 1.27); ctx.stroke();
       }
       ctx.restore();
 
-      var sweepFade = smooth(clamp((te - 1.05) / 0.55, 0, 1));
-      if (sweepFade > 0.001) {
-        var hx = Math.cos(sweepA) * (R - 26), hy = Math.sin(sweepA) * (R - 26);
-        ctx.strokeStyle = "rgba(140,78,46," + (0.72 * sweepFade).toFixed(3) + ")";
-        ctx.lineWidth = 1.6;
-        ctx.lineCap = "round";
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(hx, hy); ctx.stroke();
-        ctx.fillStyle = "rgba(24,32,64," + (0.82 * sweepFade).toFixed(3) + ")";
-        ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, 6.2832); ctx.fill();
-        ctx.fillStyle = "rgba(140,78,46," + (0.95 * sweepFade).toFixed(3) + ")";
-        ctx.beginPath(); ctx.arc(hx, hy, 3, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2);
+      ctx.fillStyle = tone(paper, 0.88 * caseIn); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * caseIn);
+      ctx.strokeStyle = tone(ink, 0.55); ctx.lineWidth = 1.8; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, R * 0.92, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * rimIn);
+      ctx.strokeStyle = tone(copper, 0.32); ctx.lineWidth = 1; ctx.stroke();
+
+      for (var t = 0; t < 60; t++) {
+        var a = t / 60 * Math.PI * 2 - Math.PI / 2;
+        var major = t % 5 === 0;
+        var tickIn = reveal(0.40 + t / 60 * 0.75, 0.35);
+        var outer = R * 0.83;
+        var inner = lerp(outer, R * (major ? 0.72 : 0.79), tickIn);
+        ctx.strokeStyle = tone(ink, (major ? 0.65 : 0.22) * tickIn);
+        ctx.lineWidth = major ? 2 : 0.8;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
+        ctx.lineTo(Math.cos(a) * outer, Math.sin(a) * outer); ctx.stroke();
       }
 
-      var wf = smooth(clamp((te - 0.7) / 1.0, 0, 1));
-      if (wf > 0) {
-        ctx.strokeStyle = "rgba(24,32,64," + (0.15 * wf).toFixed(3) + ")";
-        ctx.lineWidth = 1;
-        var r0 = R * 0.58;
-        for (var w2 = 0; w2 < 96; w2++) {
-          var wa = w2 / 96 * 6.2832 - 1.5708;
-          var wig = vnNoise(w2 * 0.35, motionOK ? te * 0.5 : 3);
-          var len = (4 + 20 * wig) * wf;
-          ctx.beginPath();
-          ctx.moveTo(Math.cos(wa) * r0, Math.sin(wa) * r0);
-          ctx.lineTo(Math.cos(wa) * (r0 + len), Math.sin(wa) * (r0 + len));
-          ctx.stroke();
-        }
-      }
-
+      var time = Math.max(0, te - 1.55);
+      var second = Math.floor(time);
+      var fraction = time - second;
+      var settle = smooth(clamp(fraction / 0.10, 0, 1));
+      var angle = (motionOK ? (second + settle) / 60 : 0.14) * Math.PI * 2 - Math.PI / 2;
+      ctx.save(); ctx.globalAlpha *= handIn;
+      ctx.save(); ctx.rotate(angle);
+      ctx.strokeStyle = tone(copper, 0.92); ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(-R * 0.13, 0); ctx.lineTo(R * 0.60 * handIn, 0); ctx.stroke();
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(0, 0, R * 0.077, 0, Math.PI * 2);
+      ctx.fillStyle = tone(paper, 1); ctx.fill();
+      ctx.strokeStyle = tone(ink, 0.78); ctx.lineWidth = 1.7; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, R * 0.023, 0, Math.PI * 2);
+      ctx.fillStyle = tone(copper, 0.9); ctx.fill();
+      ctx.restore();
       ctx.restore();
     };
   }
@@ -2135,7 +2157,11 @@
       // know what they get, so the cue answers the tagline instead.
       var cue = ed.launchable
         ? '<span class="px-card__cue">' + (ed.cue || 'Try it now') + ' &rarr;</span>'
-        : '<span class="px-card__cue px-card__cue--soon">Coming soon</span>';
+        : '<span class="px-card__cue px-card__cue--soon">In preparation</span>';
+      // A strip of tape across the poster says "not yet" without dimming
+      // the artwork, which read as broken rather than upcoming.
+      var tape = ed.launchable ? "" :
+        '<span class="px-card__tape" aria-hidden="true"><span>Coming soon</span><span>Coming soon</span><span>Coming soon</span></span>';
 
       li.innerHTML =
         // Outside the face on purpose: the face clips its overflow, so
@@ -2166,6 +2192,7 @@
             '<span class="px-card__q">' + ed.tagline + "</span>" +
             cue +
           "</span>" +
+          tape +
         close +
         '<p class="px-card__blurb">' + ed.blurb + "</p>";
 

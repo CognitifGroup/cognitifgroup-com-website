@@ -447,9 +447,9 @@
     }
 
     var render = function (ctx, W, H, te) {
-      var R = Math.min(H * 0.425, W * 0.28);
+      var R = Math.min(H * 0.425, W * (cfg.radius || 0.28));
       var scale = R * cfg.fit / reach;
-      var cx = W > 460 ? W * 0.56 : W * 0.5;
+      var cx = cfg.centered ? W * 0.5 : (W > 460 ? W * 0.56 : W * 0.5);
       var cy = H * 0.5;
 
       /* the one moving part: a front that crosses the whole figure */
@@ -664,15 +664,17 @@
       ],
       anchor: [512, 512],
       spacing: [19, 11],
-      fit: 1.08,
+      fit: 0.86,
+      radius: 0.38,
+      centered: true,
       sweep: -0.42,
       seed: 0x2d9a17c5,
       ringA: 0,
       ringB: 0,
       frame: false,
       lineWidth: 1.85,
-      lineAlpha: 0.62,
-      duration: 2.8
+      lineAlpha: 0.74,
+      duration: 3.35
     }
   };
 
